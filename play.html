@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>221 宿舍 · 联机</title>
+<style>
+  :root{
+    --bg:#07080a; --bg-2:#0b0c0f; --ink:#efe9dd; --amber:#f2b74a;
+    --dim:rgba(239,233,221,.56); --dim-2:rgba(239,233,221,.34);
+    --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.14);
+    --serif:"Songti SC","Noto Serif SC","Source Han Serif SC",STSong,serif;
+    --sans:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    --mono:"SF Mono",ui-monospace,Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--sans);
+    -webkit-font-smoothing:antialiased; min-height:100svh;
+    background-image:radial-gradient(900px 520px at 50% 108%, rgba(242,183,74,.10), transparent 70%);
+    background-attachment:fixed;
+  }
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");}
+  button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  input{font-family:inherit;color:inherit}
+  .screen{display:none;position:relative;z-index:2}
+  .screen.on{display:block;animation:fade .4s ease both}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px}
+  .kicker{font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--amber);text-transform:uppercase}
+  h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:.04em;margin:0}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:12px 22px;
+    border:1px solid var(--line-2);font-size:14px;letter-spacing:.06em;transition:.18s;background:transparent}
+  .btn:hover:not(:disabled){border-color:var(--amber);color:var(--amber)}
+  .btn.primary{background:var(--amber);color:#1b1204;border-color:var(--amber);font-weight:600}
+  .btn.primary:hover:not(:disabled){background:#ffca63;color:#1b1204}
+  .btn:disabled{opacity:.32;cursor:not-allowed}
+  .card{border:1px solid var(--line);background:rgba(255,255,255,.012)}
+
+  /* ── 进门 ── */
+  .join{min-height:100svh;display:flex;flex-direction:column;justify-content:center;max-width:560px;margin:0 auto;padding:40px 22px}
+  .join h1{font-size:clamp(48px,15vw,86px);line-height:.9;letter-spacing:-.01em;color:var(--ink)}
+  .join .sub{font-family:var(--serif);font-size:clamp(18px,4.6vw,26px);color:var(--dim);margin-top:6px}
+  .join p{color:var(--dim);font-size:13.5px;line-height:1.9;margin:24px 0 0}
+  .fld{margin-top:18px}
+  .fld label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--dim-2);margin-bottom:8px}
+  .fld input{width:100%;background:transparent;border:1px solid var(--line-2);padding:14px 14px;font-size:16px;letter-spacing:.08em;outline:none}
+  .fld input:focus{border-color:var(--amber)}
+  .fld input.code{font-family:var(--mono);font-size:22px;letter-spacing:.36em;text-transform:uppercase}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .row .btn{flex:1 1 160px}
+  .hint{font-size:12px;color:var(--dim-2);margin-top:14px;line-height:1.8}
+  .err{color:#ff8a6b;font-size:12.5px;margin-top:12px;min-height:18px}
+
+  /* ── 大厅 ── */
+  .lobby-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;
+    border-bottom:1px solid var(--line);padding-bottom:18px}
+  .codebox{font-family:var(--mono);font-size:clamp(34px,9vw,54px);letter-spacing:.22em;color:var(--amber);line-height:1}
+  .codebox small{display:block;font-size:10px;letter-spacing:.24em;color:var(--dim-2);margin-bottom:10px}
+  .roles{margin-top:26px;border-top:1px solid var(--line)}
+  .role{display:grid;grid-template-columns:30px 1fr auto;gap:14px;align-items:center;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;transition:.16s}
+  .role:hover{background:rgba(242,183,74,.04)}
+  .role.mine{border-left:2px solid var(--amber);padding-left:12px;background:rgba(242,183,74,.06)}
+  .role.taken{opacity:.4;cursor:not-allowed}
+  .role .ri{font-family:var(--mono);font-size:10px;color:var(--dim-2)}
+  .role .rn{font-family:var(--serif);font-size:20px}
+  .role .rn em{font-style:normal;font-family:var(--sans);font-size:12px;color:var(--dim);margin-left:8px}
+  .role .rs{font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;color:var(--dim-2);margin-top:5px;line-height:1.5}
+.role .rt{font-size:12.5px;color:var(--dim);margin-top:4px;line-height:1.6}
+  .role .tag{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--amber);border:1px solid rgba(242,183,74,.5);padding:4px 8px}
+  .lobby-foot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:26px}
+  .whos{font-size:12.5px;color:var(--dim);line-height:1.9}
+  .whos b{color:var(--ink);font-weight:500}
+
+  /* ── 顶栏 ── */
+  .topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+    padding:14px 20px;background:rgba(7,8,10,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .topbar .brand{font-family:var(--serif);font-size:17px;letter-spacing:.1em}
+  .topbar .brand small{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--dim-2);display:block;margin-top:2px}
+  .stats{margin-left:auto;display:flex;gap:26px;align-items:flex-end}
+  .stat{text-align:right}
+  .stat span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--dim-2);margin-bottom:5px}
+  .stat b{font-family:var(--mono);font-size:16px;font-weight:500;letter-spacing:.06em}
+  .stat b.warn{color:#ff9d6b}
+  .pill{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--amber);border:1px solid rgba(242,183,74,.4);padding:5px 9px}
+  .pill.ghost{color:var(--dim);border-color:var(--line-2);cursor:pointer;background:none;transition:.16s}
+  .pill.ghost:hover{color:var(--amber);border-color:rgba(242,183,74,.5)}
+  .link{display:inline-block;margin-top:12px;padding:0;background:none;border:0;border-bottom:1px solid var(--line-2);
+    font-family:inherit;font-size:12px;color:var(--dim-2);cursor:pointer;letter-spacing:.06em;transition:.16s}
+  .link:hover{color:var(--amber);border-color:rgba(242,183,74,.5)}
+
+  /* ── 主区 ── */
+  .stage{max-width:1080px;margin:0 auto;padding:22px 20px 40px;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:34px;align-items:start}
+  .plan-head{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--dim-2);margin-bottom:14px;gap:12px}
+  .plan-frame{border:1px solid var(--line);padding:10px;position:relative;background:rgba(255,255,255,.008)}
+  svg{display:block;width:100%;height:auto}
+  #plan text{font-family:var(--sans)}
+  .room{fill:none;stroke:rgba(255,255,255,.16);stroke-width:1.2}
+  .win{stroke:rgba(140,200,255,.5);stroke-width:2}
+  .win2{stroke:rgba(140,200,255,.18);stroke-width:1}
+  .doorline{stroke:rgba(255,255,255,.28);stroke-width:2}
+  .arc{fill:none;stroke:rgba(255,255,255,.14);stroke-width:1;stroke-dasharray:2 4}
+  .note{fill:rgba(239,233,221,.34);font-size:11px;letter-spacing:.14em;font-family:var(--mono)}
+  .spot rect{fill:rgba(255,255,255,.03);stroke:rgba(255,255,255,.22);stroke-width:1;transition:.16s}
+  .spot text{fill:rgba(239,233,221,.68);font-size:14px;letter-spacing:.08em;text-anchor:middle;pointer-events:none}
+  .spot{cursor:pointer}
+  .spot:hover rect,.spot:focus rect{fill:rgba(242,183,74,.10);stroke:var(--amber)}
+  .spot:hover text,.spot:focus text{fill:var(--amber)}
+  .spot.done rect{fill:rgba(255,255,255,.012);stroke:rgba(255,255,255,.10);stroke-dasharray:3 4}
+  .spot.done text{fill:rgba(239,233,221,.30)}
+  .spot.hit rect{fill:rgba(242,183,74,.22);stroke:var(--amber);stroke-width:2}
+  .spot.hit text{fill:var(--amber)}
+  .spot.pickable rect{stroke:rgba(242,183,74,.55)}
+  .feed{margin-top:18px;border-top:1px solid var(--line);padding-top:12px;max-height:230px;overflow-y:auto;font-size:13px;line-height:1.85}
+  .feed .ln{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:3px 0;color:var(--dim)}
+  .feed .ln i{font-family:var(--mono);font-size:9px;font-style:normal;color:var(--dim-2);padding-top:5px;letter-spacing:.1em}
+  .feed .ln.clue{color:var(--amber)}
+  .feed .ln.phase{color:var(--ink)}
+  .feed .ln.say{color:rgba(239,233,221,.82)}
+  .feed .ln.vote{color:#ffb08a}
+
+  .side{display:flex;flex-direction:column;gap:18px}
+  .id-box{border-top:1px solid var(--line);padding-top:14px}
+  .id-box .who{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .id-box .who h2{font-size:30px}
+  .id-box .who em{font-style:normal;font-size:12px;color:var(--dim)}
+  .id-box .task{font-size:13px;color:var(--dim);margin-top:6px}
+  .id-box .task b{color:var(--amber);font-weight:500}
+  .meter{height:3px;background:rgba(255,255,255,.08);margin-top:14px;overflow:hidden}
+  .meter i{display:block;height:100%;background:var(--amber);transition:width .5s cubic-bezier(.2,.7,.3,1)}
+  .mm{display:flex;justify-content:space-between;margin-top:7px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--dim-2)}
+
+  .acts{display:flex;flex-direction:column;gap:8px}
+  .act{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;width:100%;text-align:left;
+    border:1px solid var(--line-2);padding:13px 15px;min-height:56px;transition:.16s}
+  .act:hover:not(:disabled){border-color:var(--amber);background:rgba(242,183,74,.05)}
+  .act:disabled{opacity:.3}
+  .act .an{display:block;font-size:14px;letter-spacing:.04em}
+  .act .ad{display:block;font-size:11.5px;color:var(--dim-2);margin-top:5px;line-height:1.5}
+  .act .ac{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.1em}
+  .act.task{border-color:rgba(242,183,74,.42);background:rgba(242,183,74,.05)}
+  .act.act-end{border-style:dashed}
+  .chatline{display:flex;gap:8px;margin-top:2px}
+  .chatline input{flex:1;background:transparent;border:1px solid var(--line-2);padding:11px 12px;font-size:13px;outline:none}
+  .chatline input:focus{border-color:var(--amber)}
+  .chatline button{border:1px solid var(--line-2);padding:0 16px;font-size:12px}
+
+  .clues{margin-top:2px}
+  .clue{display:grid;grid-template-columns:auto 1fr;gap:9px;align-items:start;font-size:12.5px;line-height:1.7;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);color:var(--dim)}
+  .clue b{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--amber);border:1px solid rgba(242,183,74,.45);padding:2px 5px;margin-top:2px}
+  .empty{font-size:12px;color:var(--dim-2);line-height:1.8;padding:8px 0}
+
+  .mates{border-top:1px solid var(--line);padding-top:12px}
+  .mate{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+  .mate .mn{display:flex;align-items:baseline;gap:8px}
+  .mate .mn em{font-style:normal;font-family:var(--mono);font-size:9px;color:var(--dim-2);letter-spacing:.08em}
+  .mate .st{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--dim-2)}
+  .mate .st.ready{color:var(--amber)}
+  .mate.me .mn{color:var(--amber)}
+
+  /* ── 浮层 ── */
+  .ovl{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;
+    background:rgba(4,5,7,.82);backdrop-filter:blur(6px)}
+  .ovl.on{display:flex}
+  .panel{width:100%;max-width:560px;border:1px solid var(--line-2);background:#0a0b0e;padding:30px 28px 26px;
+    max-height:88svh;overflow-y:auto;animation:pop .3s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:none}}
+  .panel .kicker{color:var(--dim-2)}
+  .panel h2{font-size:clamp(24px,5vw,32px);margin-top:10px}
+  .panel .sub{font-size:13px;color:var(--dim);line-height:1.85;margin-top:8px}
+  .opt{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;width:100%;text-align:left;
+    border:1px solid var(--line);padding:13px 15px;margin-top:8px;min-height:52px;transition:.16s}
+  .opt:hover:not(:disabled){border-color:var(--amber);background:rgba(242,183,74,.06)}
+  .opt:disabled{opacity:.35}
+  .opt .on{display:block;font-size:14px}
+  .opt .od{display:block;font-size:11.5px;color:var(--dim-2);margin-top:5px}
+  .opt .oc{font-family:var(--mono);font-size:10px;color:var(--dim)}
+  .panel .timer{font-family:var(--mono);font-size:12px;color:var(--amber);letter-spacing:.16em;margin-top:14px}
+
+  /* ── 结算 ── */
+  .end{padding:56px 22px 70px;max-width:760px;margin:0 auto}
+  .end h1{font-size:clamp(46px,12vw,96px);line-height:.95;color:var(--amber);letter-spacing:-.01em}
+  .end .lead{font-family:var(--serif);font-size:clamp(17px,3.6vw,22px);color:var(--dim);line-height:1.75;margin-top:14px;max-width:34em}
+  .facts{display:flex;gap:40px;flex-wrap:wrap;margin-top:30px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:20px 0}
+  .fact span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--dim-2);margin-bottom:8px}
+  .fact b{font-family:var(--serif);font-size:22px;font-weight:500}
+  .rank{margin-top:22px}
+  .rk{display:grid;grid-template-columns:26px minmax(150px,max-content) 1fr 46px;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+  .rk .i{font-family:var(--mono);font-size:10px;color:var(--dim-2)}
+  .rk .n{display:flex;gap:7px;align-items:baseline;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rk .n em{font-style:normal;font-family:var(--mono);font-size:9px;color:var(--dim-2);letter-spacing:.08em}
+  .rk.me .n{color:var(--amber)}
+  .rk .b{height:2px;background:rgba(255,255,255,.07);overflow:hidden}
+  .rk .b i{display:block;height:100%;background:rgba(239,233,221,.3)}
+  .rk.me .b i{background:var(--amber)}
+  .rk .p{font-family:var(--mono);font-size:11px;text-align:right;color:var(--dim)}
+  .rk.mvp .n::after{content:"MVP";font-family:var(--mono);font-size:8px;letter-spacing:.12em;color:#1b1204;background:var(--amber);padding:1px 5px}
+  .end .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+  .note-line{font-size:12.5px;color:var(--dim-2);line-height:1.9;margin-top:18px}
+
+  @media (max-width:900px){
+    .stage{grid-template-columns:1fr;gap:26px;padding:18px 16px 40px}
+.stats{gap:18px}
+    .topbar{padding:12px 16px;gap:12px}
+    .act{min-height:60px}
+    .feed{max-height:170px}
+  }
+
+/* 大逃杀窄屏：HUD 压成一行，标签与数值同排 */
+@media (max-width:700px){
+  #scHunt .topbar{padding:10px 12px}
+  #scHunt .stats{gap:10px;margin-left:0;width:100%;justify-content:flex-start;align-items:center;flex-wrap:wrap}
+  #scHunt .stat,#scHunt .pill{flex:0 0 auto}
+  #scHunt .stat{display:flex;align-items:baseline;gap:5px;text-align:left;white-space:nowrap}
+  #scHunt .stat span{margin:0;font-size:8.5px;letter-spacing:.04em}
+  #scHunt .stat b{font-size:12px}
+  #scHunt .pill{font-size:10px;padding:3px 7px;white-space:nowrap}
+}
+
+/* ── 暗号版 ── */
+.connwarn{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border:1px solid rgba(226,74,52,.5);background:rgba(90,18,12,.28);margin-top:14px;font-size:12.5px;line-height:1.6;color:#e8cfc6}
+.connwarn[hidden]{display:none}
+.connwarn b{color:#f2563c;font-family:var(--mono);font-size:11px;letter-spacing:.1em}
+.connwarn .btn.small{align-self:flex-start;margin-top:4px;padding:7px 14px;font-size:12px}
+.btn.small{padding:7px 14px;font-size:12px}
+#cdeRank{list-style:none;margin-top:16px;border-top:1px solid var(--line)}
+.crk{display:grid;grid-template-columns:26px minmax(132px,max-content) minmax(0,1fr) 54px;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+.crk .i{font-family:var(--mono);font-size:10px;color:var(--dim-2)}
+.crk .n{display:flex;gap:7px;align-items:baseline;white-space:nowrap}
+.crk .n em{font-style:normal;font-family:var(--mono);font-size:9px;color:var(--dim-2);letter-spacing:.08em}
+.crk .ach{font-size:11.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crk .p{font-family:var(--mono);font-size:11px;text-align:right;color:var(--dim)}
+.crk.me .n{color:var(--amber)}
+.crk.mvp .p{color:var(--amber)}
+.crk.mvp .n::after{content:"MVP";font-family:var(--mono);font-size:8px;letter-spacing:.12em;color:#1b1204;background:var(--amber);padding:1px 5px}
+@media (max-width:600px){.crk{grid-template-columns:22px minmax(0,1fr) 46px}.crk .ach{display:none}}
+.cdwrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:34px;padding-top:26px}
+@media(max-width:900px){.cdwrap{grid-template-columns:minmax(0,1fr);gap:22px}}
+.cdhead{display:flex;justify-content:space-between;gap:14px;font-family:var(--mono);font-size:11px;letter-spacing:.09em;color:var(--dim-2);border-bottom:1px solid var(--line);padding-bottom:10px}
+.cdhead b{color:var(--paper);font-weight:500}
+.frag{margin:20px 0 4px;padding:20px 22px;border-left:2px solid var(--amber);background:rgba(255,255,255,.028);font-family:var(--serif);font-size:19px;line-height:1.72;color:var(--paper)}
+.notes{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.notes div{font-size:12.5px;line-height:1.65;color:var(--amber);border-left:1px solid rgba(242,183,74,.38);padding-left:11px}
+.slots{display:flex;gap:10px;margin:22px 0 14px}
+.slot{flex:1;height:76px;display:grid;place-items:center;border:1px solid var(--line-2);font-family:var(--serif);font-size:34px;color:var(--paper);background:rgba(255,255,255,.02);transition:border-color .2s}
+.slot.empty{color:transparent}
+.slot.cur{border-color:var(--amber);background:rgba(242,183,74,.06)}
+.pad{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:6px}
+@media(max-width:700px){.pad{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.pad button{height:46px;border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--paper);font-family:var(--serif);font-size:17px;cursor:pointer;transition:border-color .16s,color .16s}
+.pad button:hover:not(:disabled){border-color:var(--amber);color:var(--amber)}
+.pad button:disabled{opacity:.35;cursor:default}
+.pad button.wide{grid-column:span 2;font-family:var(--mono);font-size:11px;letter-spacing:.08em}
+.cdrow{display:flex;gap:10px;margin-top:20px;align-items:stretch;flex-wrap:wrap}
+.chbtn{flex:1 1 140px;min-height:58px;border:1px solid var(--line-2);background:transparent;color:var(--dim);font-size:13.5px;cursor:pointer;line-height:1.4;padding:6px 10px}
+.chbtn.on{border-color:var(--amber);color:var(--amber);background:rgba(242,183,74,.07)}
+.chbtn:disabled{opacity:.35;cursor:default}
+.cdrow .btn.primary{flex:0 0 170px;min-height:58px}
+.cdstate{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--dim-2);margin-top:14px;min-height:18px}
+.cdside .h{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--dim-2);padding-bottom:9px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.prog{display:flex;gap:5px;flex-wrap:wrap}
+.prog i{width:40px;height:28px;border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:var(--dim-2);font-style:normal}
+.prog i.done{border-color:rgba(242,183,74,.5);color:var(--amber);background:rgba(242,183,74,.06)}
+.prog i.me{border-color:var(--amber);color:var(--amber)}
+.achlist{display:flex;flex-direction:column;gap:9px;font-size:12px;color:var(--dim);line-height:1.6}
+.achlist div{padding-left:11px;border-left:1px solid rgba(242,183,74,.35)}
+.achlist .none{color:var(--dim-2);border-left-color:var(--line-2)}
+.reveal{margin-top:18px;border-top:1px solid var(--line)}
+.rvrow{display:grid;grid-template-columns:minmax(0,1fr) 84px 62px;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px;align-items:center}
+.rvrow .rn2 b{font-weight:500;color:var(--paper)} .rvrow .rn2 em{font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--dim-2);margin-left:8px;letter-spacing:.08em}
+.rvrow .sk{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--dim-2)}
+.rvrow .sk.used{color:var(--amber)}
+.rvrow .mark{text-align:right;font-family:var(--mono);font-size:11px}
+.rvrow .mark.ok{color:var(--amber)} .rvrow .mark.no{color:var(--dim-2)}
+.verdict{margin-top:18px;padding:15px 17px;border-left:2px solid var(--amber);background:rgba(242,183,74,.06);font-size:14px;line-height:1.75;color:var(--paper)}
+.verdict.chaos{border-left-color:#c8442f;background:rgba(200,68,47,.09)}
+.verdict.none{border-left-color:var(--line-2);background:rgba(255,255,255,.03)}
+.modes{display:flex;gap:8px;flex-wrap:wrap}
+.modebtn{flex:1 1 150px;min-height:62px;padding:10px 12px;border:1px solid var(--line-2);background:transparent;color:var(--dim);text-align:left;cursor:pointer;line-height:1.5}
+.modebtn b{display:block;color:var(--paper);font-weight:500;font-size:14px;margin-bottom:3px}
+.modebtn small{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--dim-2)}
+.modebtn.on{border-color:var(--amber);background:rgba(242,183,74,.07)}
+.modebtn.on b{color:var(--amber)}
+
+/* ── 大逃杀 ── */
+.huntwrap{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:34px;align-items:start;max-width:1180px}
+.huntmain{min-width:0}
+.cvwrap{position:relative;border:1px solid var(--line);background:#07080a}
+#huntCanvas{display:block;width:100%;touch-action:none;cursor:crosshair}
+.hhead{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:12px}
+.hhead span{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--dim-2)}
+.hhead em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--amber)}
+.hacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin-top:14px}
+.ghostbox{border-top:1px solid var(--line);margin-top:18px;padding-top:14px}
+.ghostbox .h{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:rgba(226,74,52,.9);margin-bottom:10px}
+.ghostbox .hacts{grid-template-columns:repeat(4,minmax(0,1fr));margin-top:0}
+.habtn{display:flex;flex-direction:column;gap:4px;align-items:flex-start;padding:10px 12px;background:rgba(255,255,255,.02);border:1px solid var(--line);color:var(--paper);font-size:12.5px;letter-spacing:.02em;transition:border-color .18s,background .18s}
+.habtn small{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--dim-2);font-weight:400}
+.habtn:hover:not(:disabled){border-color:rgba(242,183,74,.55);background:rgba(242,183,74,.06)}
+.habtn:disabled{opacity:.4}
+.habtn.bad{color:#f2a08e;border-color:rgba(226,74,52,.35)}
+.habtn.bad:hover:not(:disabled){border-color:rgba(226,74,52,.8);background:rgba(226,74,52,.08)}
+.huntside .h{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--dim-2);margin-bottom:10px}
+.hrule{list-style:none;display:flex;flex-direction:column;gap:9px}
+.hrule li{font-size:12.5px;line-height:1.6;color:var(--dim);padding-left:12px;position:relative}
+.hrule li::before{content:"";position:absolute;left:0;top:8px;width:4px;height:4px;background:rgba(242,183,74,.6)}
+.cluelist{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--dim)}
+.cluelist .cl{padding:6px 8px;border-left:2px solid rgba(242,183,74,.5);background:rgba(242,183,74,.04)}
+.crk-list{list-style:none;margin-top:14px;border-top:1px solid var(--line)}
+.endnote{font-size:12.5px;color:var(--dim-2);line-height:1.8;margin:16px 0 6px}
+@media (max-width:900px){
+  .huntwrap{grid-template-columns:minmax(0,1fr)}
+  .huntside{display:none}
+  .hacts{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:600px){
+  .hacts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ghostbox .hacts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
+</head>
+<body>
+
+<!-- 进门 -->
+<section id="scJoin" class="screen on">
+  <div class="join">
+    <div class="kicker">六人 · 三十省 · 一盏灯</div>
+    <h1>221</h1>
+    <div class="sub">断电后的最后一夜 · 联机</div>
+    <p id="joinLead">同一片网里，六个人各拿一部手机。建房的人拿到 4 位房间码，剩下的人输码进来——灯只有一个，谁先翻到谁就是今晚的功臣。</p>
+
+    <div class="fld">
+      <label>你的名字</label>
+      <input id="inName" maxlength="8" placeholder="随便叫什么都行" autocomplete="off">
+    </div>
+
+    <div class="fld">
+      <label>玩法</label>
+      <div class="modes" id="modePick">
+        <button class="modebtn on" data-mode="search"><b>搜查版</b><small>3 轮搜查 · 找备用小夜灯</small></button>
+        <button class="modebtn" data-mode="code"><b>暗号版</b><small>5 波查寝塔防 · 拼暗号守门</small></button>
+        <button class="modebtn" data-mode="hunt"><b>大逃杀</b><small>6 人跑图 · 贴纸抓查寝鬼</small></button>
+      </div>
+    </div>
+
+    <div class="row">
+      <button class="btn primary" id="btnCreate">开一间房</button>
+    </div>
+
+    <div class="fld">
+      <label>手里有房间码</label>
+      <input id="inCode" class="code" maxlength="4" placeholder="ABCD" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="row">
+      <button class="btn" id="btnJoin">进这间房</button>
+    </div>
+
+    <div class="err" id="joinErr"></div>
+    <div class="connwarn" id="connWarn" hidden>
+      <b>连不上这台电脑的服务器</b>
+      <span id="connWhere"></span>
+      <span>手机和电脑要在同一个 Wi-Fi；电脑上的服务器窗口不能关。</span>
+      <button class="btn small" id="btnRetry">重试</button>
+    </div>
+    <div class="hint">手机和电脑要在同一片网络。房间里 2 人就能开，空位由室友 NPC 补满六个人。</div>
+    <div class="hint"><a href="index.html" style="color:var(--dim);border-bottom:1px solid var(--line-2)">← 一个人玩单机版</a></div>
+  </div>
+</section>
+
+<!-- 大厅 -->
+<section id="scLobby" class="screen">
+  <div class="wrap">
+    <div class="lobby-head">
+      <div>
+        <div class="codebox"><small>房间码 · 发给室友</small><span id="lobbyCode">----</span></div>
+        <button class="link" id="btnLeaveLobby">离开房间</button>
+      </div>
+      <div class="whos" id="lobbyWhos"></div>
+    </div>
+
+    <div class="roles" id="roleList"></div>
+
+    <div class="lobby-foot">
+      <div class="hint" id="lobbyHint">挑一个身份。身份决定你的秘密任务，也决定你能做什么小动作。</div>
+      <button class="btn primary" id="btnStart">开始这一夜</button>
+    </div>
+  </div>
+</section>
+
+<!-- 游戏 -->
+<section id="scGame" class="screen">
+  <div class="topbar">
+    <div class="brand">221 宿舍<small id="topPhase">行动中</small></div>
+    <div class="stats">
+      <div class="stat"><span>轮次</span><b id="topRound">1 / 3</b></div>
+      <div class="stat"><span id="topTimerLabel">剩余</span><b id="topTimer">—</b></div>
+      <div class="stat"><span>行动预算</span><b id="topBudget">180</b></div>
+      <div class="pill" id="topCode">----</div>
+      <button class="pill ghost" id="btnLeaveGame" title="离开房间">离开</button>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div>
+      <div class="plan-head">
+        <span>宿舍平面图 / 点击搜查</span>
+        <em id="planHint">每次搜查 −50 秒</em>
+      </div>
+      <div class="plan-frame">
+        <svg id="plan" viewBox="0 0 640 520" role="group" aria-label="221 宿舍平面图">
+          <rect class="room" x="24" y="28" width="592" height="464"/>
+          <line class="win" x1="24" y1="150" x2="24" y2="320"/>
+          <line class="win2" x1="18" y1="150" x2="18" y2="320"/>
+          <text class="note" x="34" y="124">窗</text>
+          <line class="doorline" x1="60" y1="28" x2="196" y2="28" stroke-width="3"/>
+          <text class="note" x="200" y="22">阳台门</text>
+          <line class="doorline" x1="616" y1="330" x2="616" y2="452"/>
+          <path class="arc" d="M616 452 A122 122 0 0 1 494 330"/>
+          <text class="note" x="596" y="320">门</text>
+          <g class="spot" data-id="balcony"><rect x="40" y="44" width="150" height="66"/><text x="115" y="82">阳台门后</text></g>
+          <g class="spot" data-id="bunk"><rect x="40" y="132" width="180" height="168"/><text x="130" y="220">上铺被窝</text></g>
+          <g class="spot" data-id="drawer"><rect x="40" y="350" width="170" height="106"/><text x="125" y="407">书桌抽屉</text></g>
+          <g class="spot" data-id="books"><rect x="246" y="318" width="118" height="74"/><text x="305" y="359">课本堆</text></g>
+          <g class="spot" data-id="closet"><rect x="438" y="44" width="162" height="118"/><text x="519" y="107">衣柜顶层</text></g>
+          <g class="spot" data-id="water"><rect x="458" y="192" width="112" height="108"/><text x="514" y="250">饮水机后</text></g>
+          <g class="spot" data-id="case"><rect x="350" y="404" width="118" height="62"/><text x="409" y="439">行李箱</text></g>
+          <g class="spot" data-id="hook"><rect x="486" y="322" width="106" height="126"/><text x="539" y="389">门后挂钩</text></g>
+          <text class="note" x="52" y="486">221 · 23:07</text>
+        </svg>
+      </div>
+      <div class="feed" id="feed"></div>
+    </div>
+
+    <div class="side">
+      <div class="id-box">
+        <div class="who"><h2 id="myRole">—</h2><em id="myName"></em></div>
+        <div class="task" id="myTask">秘密任务：—</div>
+        <div class="meter"><i id="myFill" style="width:0"></i></div>
+        <div class="mm"><span id="myPct">0%</span><span id="myNote"></span></div>
+        <div class="muted" id="myMuted" style="display:none">没接龙王的令 · 这一轮不能投票</div>
+      </div>
+
+      <div class="callbar" id="callBar" style="display:none"></div>
+
+      <div class="acts" id="acts"></div>
+
+      <div class="chatline">
+        <input id="inMsg" maxlength="40" placeholder="说一句话（每轮一次）" autocomplete="off">
+        <button id="btnMsg">发出</button>
+      </div>
+
+      <div class="clues" id="clueList"></div>
+      <div class="mates" id="mateList"></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- 暗号版 -->
+<section id="scCode" class="screen">
+  <div class="topbar">
+    <div class="brand">221 宿舍<small id="cdBrand">查寝中</small></div>
+    <div class="stats">
+      <div class="stat"><span>波次</span><b id="cdWave">1 / 5</b></div>
+      <div class="stat"><span>威胁</span><b id="cdThreat">小</b></div>
+      <div class="stat"><span>门</span><b id="cdDoor">完好</b></div>
+      <div class="stat"><span>剩余</span><b id="cdTimer">—</b></div>
+      <div class="pill" id="cdCode">----</div>
+      <button class="pill ghost" id="btnLeaveCd">离开</button>
+    </div>
+  </div>
+  <div class="wrap cdwrap">
+    <div class="cdmain">
+      <div class="cdhead"><span id="cdTitle">第 1 波</span><span id="cdSub">碎片只发给你一个人</span></div>
+      <div class="frag" id="cdFrag">等系统发碎片…</div>
+      <div class="notes" id="cdNotes"></div>
+      <div id="cdPlay">
+        <div class="slots" id="cdSlots"></div>
+        <div class="pad" id="cdPad"></div>
+        <div class="cdrow">
+          <button class="chbtn" id="cdSkill">用技能<br><small style="font-family:var(--mono);font-size:10px;letter-spacing:.06em">减伤 + 换一条暗号情报</small></button>
+          <button class="chbtn on" id="cdKeep">保留技能<br><small style="font-family:var(--mono);font-size:10px;letter-spacing:.06em">这波只交暗号</small></button>
+          <button class="btn primary" id="cdSubmit">交答案</button>
+        </div>
+      </div>
+      <div class="cdstate" id="cdState"></div>
+      <div id="cdReveal"></div>
+    </div>
+    <div class="cdside">
+      <div class="h">本波提交</div>
+      <div class="prog" id="cdProg"></div>
+      <div class="cdstate" id="cdCount" style="margin-top:10px"></div>
+      <div class="h" style="margin-top:26px">我的成就</div>
+      <div class="achlist" id="cdAch"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 大逃杀 -->
+<section id="scHunt" class="screen">
+  <div class="topbar">
+    <div class="brand">221 宿舍<small>大逃杀</small></div>
+    <div class="stats">
+      <div class="stat"><span>轮次</span><b id="hRound">1 / 3</b></div>
+      <div class="stat"><span>阶段</span><b id="hPhase">跑图</b></div>
+      <div class="stat"><span>剩余</span><b id="hTimer">—</b></div>
+      <div class="stat"><span>拼图</span><b id="hPuzzle">0 / 6</b></div>
+      <div class="stat"><span>破坏</span><b id="hBroken">0 / 3</b></div>
+      <div class="stat"><span>任务</span><b id="hDone">0 / 6</b></div>
+      <div class="pill" id="hMine">你是室友</div>
+      <button class="pill ghost" id="btnLeaveHunt">离开</button>
+    </div>
+  </div>
+  <div class="wrap huntwrap">
+    <div class="huntmain">
+      <div class="hhead"><span id="hBanner">跑图：捡碎片、修任务点</span><em id="hSkillName">技能</em></div>
+      <div class="cvwrap"><canvas id="huntCanvas"></canvas></div>
+      <div class="hacts">
+        <button class="habtn" id="hActLight">电闸<small>开 / 关灯</small></button>
+        <button class="habtn" id="hActHide">躲柜子<small>藏 6 秒</small></button>
+        <button class="habtn" id="hActThrow">扔拖鞋<small>眩晕 2 秒</small></button>
+        <button class="habtn" id="hActWall">敲墙<small>制造动静</small></button>
+        <button class="habtn" id="hActTask">做任务<small id="hTaskName">靠近任务点</small></button>
+        <button class="habtn" id="hActRepair">修理<small>修好被破坏的点</small></button>
+        <button class="habtn" id="hActSkill">用技能<small>一局一次</small></button>
+      </div>
+      <div class="ghostbox" id="hGhostBox" hidden>
+        <div class="h">你是查寝鬼</div>
+        <div class="hacts">
+          <button class="habtn bad" id="hGdark">关灯</button>
+          <button class="habtn bad" id="hGlock">锁门</button>
+          <button class="habtn bad" id="hGrush">冲刺</button>
+          <button class="habtn bad" id="hGbreak">破坏任务点<small>连点 4 次</small></button>
+        </div>
+      </div>
+    </div>
+    <div class="huntside">
+      <div class="h">怎么玩</div>
+      <ul class="hrule">
+        <li>WASD / 方向键，或在画面上拖动摇杆</li>
+        <li>踩到碎片自动拾取，全队拼满 6 块会暴露鬼 3 秒</li>
+        <li>贴纸阶段：走到可疑的人身上点一下</li>
+        <li>没有聊天框——只能用动作和贴纸说话</li>
+      </ul>
+      <div class="h" style="margin-top:22px">我捡到的线索</div>
+      <div class="cluelist" id="hClues">还没有</div>
+    </div>
+  </div>
+</section>
+
+<!-- 大逃杀结算 -->
+<section id="scHEnd" class="screen">
+  <div class="end">
+    <div class="kicker">结局 / 大逃杀</div>
+    <h1 id="hEndTitle">天亮了。</h1>
+    <div class="lead" id="hEndLead"></div>
+    <div class="facts">
+      <div class="fact"><span>查寝鬼</span><b id="hEndGhost">—</b></div>
+      <div class="fact"><span>撑到</span><b id="hEndRounds">—</b></div>
+      <div class="fact"><span>拼图</span><b id="hEndPuzzle">—</b></div>
+    </div>
+    <div class="sect">六个人的身份 <em>谁在装室友</em></div>
+    <ul class="crk-list" id="hEndRank"></ul>
+    <div class="endnote" id="hEndNote"></div>
+    <div class="end-actions">
+      <button class="btn primary" id="hAgain">再来一局</button>
+      <button class="btn" id="hLeave">离开房间</button>
+    </div>
+  </div>
+</section>
+
+<!-- 暗号版结算 -->
+<section id="scCdEnd" class="screen">
+  <div class="end">
+    <div class="kicker">结局 / 暗号版</div>
+    <h1 id="cdeTitle">天亮了。</h1>
+    <div class="lead" id="cdeLead"></div>
+    <div class="facts">
+      <div class="fact"><span>撑过</span><b id="cdeWaves">—</b></div>
+      <div class="fact"><span>门</span><b id="cdeDoor">—</b></div>
+      <div class="fact"><span>MVP</span><b id="cdeMvp">—</b></div>
+    </div>
+    <ul class="rank-list" id="cdeRank"></ul>
+    <div class="lead" id="cdeNote" style="font-size:14px;margin-top:16px"></div>
+    <div class="actions">
+      <button class="btn primary" id="cdeAgain">再来一局</button>
+      <button class="btn" id="cdeLeave">离开房间</button>
+    </div>
+  </div>
+</section>
+
+<!-- 结算 -->
+<section id="scEnd" class="screen">
+  <div class="end">
+    <div class="kicker">结局 / 联机</div>
+    <h1 id="endTitle">灯亮了。</h1>
+    <div class="lead" id="endLead"></div>
+    <div class="facts">
+      <div class="fact"><span>小夜灯</span><b id="endLamp">—</b></div>
+      <div class="fact"><span>谁找到的</span><b id="endWho">—</b></div>
+      <div class="fact"><span>本场 MVP</span><b id="endMvp">—</b></div>
+    </div>
+    <div class="rank" id="endRank"></div>
+    <div class="note-line" id="endNote"></div>
+    <div class="actions">
+      <button class="btn primary" id="btnAgain">再来一夜 →</button>
+      <button class="btn" id="btnLeave">离开房间</button>
+    </div>
+  </div>
+</section>
+
+<div class="ovl" id="ovl"><div class="panel" id="panel"></div></div>
+
+<script>
+(function(){
+'use strict';
+
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const ce = (t, c) => { const e = document.createElement(t); if (c) e.className = c; return e; };
+
+const store = {
+  get(){ try { return JSON.parse(localStorage.getItem('d221mp') || 'null'); } catch(_) { return null; } },
+  set(v){ localStorage.setItem('d221mp', JSON.stringify(v)); },
+  clear(){ localStorage.removeItem('d221mp'); }
+};
+
+const S = { snap:null, me:null, es:null, offset:0, ovlKey:'', busy:false, lastFeed:0, errs:0, manual:false, skipVote:false,
+  mode:'search', cdGuess:'', cdUseSkill:false, cdKey:'' };
+
+/* ── 连接自检 ── */
+async function ping(){
+  try{
+    const r = await fetch('/api/ping', { cache:'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    return j && j.ok ? j : null;
+  }catch(_){ return null; }
+}
+async function checkConn(){
+  const box = $('#connWarn');
+  if (!box) return;
+  const j = await ping();
+  if (j){
+    box.hidden = true;
+    if ($('#connWhere')) $('#connWhere').textContent = '';
+    return;
+  }
+  const where = $('#connWhere');
+  if (where) where.textContent = '你打开的是 ' + location.origin + (location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? '（电脑自己）' : '');
+  box.hidden = false;
+}
+window.addEventListener('online', checkConn);
+window.addEventListener('offline', () => { const b = $('#connWarn'); if (b) b.hidden = false; });
+
+/* ── 网络 ── */
+async function api(path, body){
+  try{
+    const r = await fetch('/api/' + path, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body || {})
+    });
+    return await r.json();
+  }catch(e){ return { error:'连不上服务器' }; }
+}
+
+function toast(msg){
+  const el = $('#joinErr');
+  if (el) el.textContent = msg || '';
+}
+
+function connect(){
+  if (S.es) S.es.close();
+  S.errs = 0;
+  if (S.poll){ startPolling(); return; }
+  if (typeof EventSource === 'undefined'){ startPolling(); return; }
+  const es = new EventSource('/events?room=' + encodeURIComponent(S.me.code) + '&pid=' + encodeURIComponent(S.me.pid));
+  S.es = es;
+  es.addEventListener('state', ev => {
+    const snap = JSON.parse(ev.data);
+    S.offset = (snap.srvNow || Date.now()) - Date.now();
+    S.snap = snap;
+    render();
+  });
+  es.onerror = () => {
+    S.errs++;
+    if (S.errs > 6){
+      es.close();
+      startPolling();
+    }
+  };
+}
+
+/* SSE 被代理挡住时的退路：1 秒轮询一次状态 */
+function startPolling(){
+  if (S.pollTimer) return;
+  const tick = () => {
+    api('state', S.me).then(snap => {
+      if (!snap || snap.error) return;
+      S.offset = (snap.srvNow || Date.now()) - Date.now();
+      S.snap = snap;
+      render();
+    });
+  };
+  tick();
+  S.pollTimer = setInterval(tick, 1000);
+}
+
+/* ── 屏幕切换 ── */
+function setScreen(id){
+  $$('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+  window.scrollTo({ top:0, behavior:'instant' });
+}
+
+/* ── 渲染 ── */
+function render(){
+  const snap = S.snap;
+  if (!snap) return;
+  const phase = snap.room.phase;
+  if (phase === 'lobby'){ setScreen('scLobby'); renderLobby(); return; }
+  if (phase === 'end'){
+    if (snap.result && snap.result.mode === 'code'){ setScreen('scCdEnd'); renderCodeEnd(); hideOvl(); return; }
+      if (snap.result && snap.result.mode === 'hunt'){ setScreen('scHEnd'); renderHEnd(); hideOvl(); return; }
+    setScreen('scEnd'); renderEnd(); hideOvl(); return;
+  }
+  if (snap.result && snap.result.mode === 'hunt'){ setScreen('scHEnd'); renderHEnd(); hideOvl(); return; }
+  if (snap.room.mode === 'hunt'){ setScreen('scHunt'); renderHunt(); hideOvl(); return; }
+  if (snap.room.mode === 'code'){ setScreen('scCode'); renderCode(); hideOvl(); return; }
+  setScreen('scGame');
+  renderGame();
+  renderOvl();
+}
+
+function renderLobby(){
+  const snap = S.snap;
+  $('#lobbyCode').textContent = snap.room.code;
+  const humans = snap.players.filter(p => !p.isBot);
+  $('#lobbyWhos').innerHTML = humans.map(p =>
+    `<div><b>${esc(p.name)}</b>${p.role ? ' · ' + snap.roles[p.role].name : ' · 还没挑'}</div>`
+  ).join('') + `<div style="color:var(--dim-2);margin-top:6px">${humans.length} / 6 人 · 开一局再补 NPC</div>`;
+
+  const host = snap.room.hostId === snap.me.id;
+  const btn = $('#btnStart');
+  btn.style.display = host ? '' : 'none';
+  btn.disabled = !(humans.length >= 2 && snap.me.role);
+
+  $('#roleList').innerHTML = Object.keys(snap.roles).map((rid, i) => {
+    const r = snap.roles[rid];
+    const owner = snap.players.find(p => p.role === rid);
+    const mine = snap.me.role === rid;
+    const taken = owner && !mine;
+    return `<div class="role ${mine ? 'mine' : ''} ${taken ? 'taken' : ''}" data-role="${rid}">
+      <div class="ri">0${i + 1}</div>
+      <div>
+        <div class="rn">${r.name}<em>${r.who}</em></div>
+        <div class="rt">${r.task}</div>
+        <div class="rs">技能【${r.skill}】${r.skillDesc}</div>
+      </div>
+      <div class="tag">${mine ? '就是你' : taken ? esc(owner.name) : '可选'}</div>
+    </div>`;
+  }).join('');
+
+  $$('#roleList .role').forEach(el => {
+    el.onclick = async () => {
+      if (el.classList.contains('taken')) return;
+      const res = await api('role', { code:S.me.code, pid:S.me.pid, role: el.dataset.role });
+      if (res.error) toast(res.error);
+    };
+  });
+
+  $('#lobbyHint').textContent = snap.me.role
+    ? '房间码发给室友，人齐了房主开局。空位会由室友 NPC 补上。'
+    : '先挑一个身份，挑完才能开局。';
+}
+
+
+/* ─── 暗号版 ─── */
+function cdLocked(){ const c = S.snap && S.snap.code; return !c || !!c.pick || c.phase === 'reveal'; }
+
+function renderCode(){
+  const snap = S.snap, c = snap.code, room = snap.room;
+  if (!c){ return; }
+  $('#cdCode').textContent = room.code;
+  $('#cdWave').textContent = c.wave + ' / ' + c.total;
+  $('#cdThreat').textContent = c.threat;
+  $('#cdDoor').textContent = c.door;
+  $('#cdTimer').textContent = remain(room.endsAt);
+  $('#cdBrand').textContent = c.phase === 'brief' ? '发碎片' : c.phase === 'choose' ? '同时交答案' : '亮牌';
+  $('#cdTitle').textContent = '第 ' + c.wave + ' 波 · 鬼叫「' + c.ghost + '」';
+  $('#cdSub').textContent = c.phase === 'brief' ? '碎片正在发到每个人手机上'
+    : c.phase === 'choose' ? '只有你能看到这条碎片' : '本波结算，不许说话';
+  $('#cdFrag').textContent = c.frag || '…';
+  $('#cdNotes').innerHTML = (c.notes || []).map(n => '<div>' + esc(n) + '</div>').join('');
+
+  // 进度格
+  $('#cdProg').innerHTML = snap.players.map((p, i) => {
+    const done = i < c.submitted;
+    return '<i class="' + (done ? 'done' : '') + '">' + (done ? '●' : '○') + '</i>';
+  }).join('');
+  $('#cdCount').textContent = c.submitted + ' / ' + c.people + ' 已交';
+
+  // 成就
+  const mineAch = c.ach || [];
+  $('#cdAch').innerHTML = mineAch.length
+    ? mineAch.map(a => '<div>' + esc(a.name) + '</div>').join('')
+    : '<div class="none">还没有成就。撑过这一波再看看。</div>';
+
+  const locked = !!c.pick || c.phase === 'reveal';
+  const chars = c.chars || [];
+
+  // 四个字位
+  const arr = [...(S.cdGuess || '')];
+  $('#cdSlots').innerHTML = [0,1,2,3].map(i => {
+    const has = !!arr[i];
+    const cur = !locked && i === arr.length;
+    return '<div class="slot ' + (has ? '' : 'empty') + (cur ? ' cur' : '') + '">' + (has ? esc(arr[i]) : '·') + '</div>';
+  }).join('');
+
+  // 键盘
+  const padKey = chars.join('') + '|' + locked + '|' + arr.length;
+  if (S.cdKey !== padKey){
+    S.cdKey = padKey;
+    $('#cdPad').innerHTML = chars.map(ch =>
+      '<button data-ch="' + ch + '"' + (locked ? ' disabled' : '') + '>' + ch + '</button>'
+    ).join('') +
+      '<button class="wide" data-act="del"' + (locked ? ' disabled' : '') + '>退格</button>' +
+      '<button class="wide" data-act="clr"' + (locked ? ' disabled' : '') + '>清空</button>';
+    $$('#cdPad button').forEach(b => {
+      b.onclick = () => {
+        if (b.dataset.act === 'del') S.cdGuess = S.cdGuess.slice(0, -1);
+        else if (b.dataset.act === 'clr') S.cdGuess = '';
+        else if (S.cdGuess.length < 4) S.cdGuess += b.dataset.ch;
+        renderCode();
+      };
+    });
+  }
+
+  // 技能选择
+  const skillBtn = $('#cdSkill'), keepBtn = $('#cdKeep'), submitBtn = $('#cdSubmit');
+  const usedAll = c.skillUsed;
+  skillBtn.classList.toggle('on', !!S.cdUseSkill);
+  keepBtn.classList.toggle('on', !S.cdUseSkill);
+  skillBtn.disabled = locked || usedAll;
+  keepBtn.disabled = locked;
+  if (usedAll) skillBtn.innerHTML = '技能已用<br><small style="font-family:var(--mono);font-size:10px;letter-spacing:.06em">这一局没有技能了</small>';
+  submitBtn.disabled = locked || (S.cdGuess || '').length !== 4;
+  $('#cdPlay').style.display = locked ? 'none' : '';
+
+  // 状态行
+  $('#cdState').textContent = locked
+    ? (c.phase === 'reveal' ? '本波已结算，看下面亮牌'
+      : c.pick ? '已交：' + (c.pick.skill ? '用技能' : '保留技能') + ' + 「' + (c.pick.guess || '空') + '」 · 等其他人'
+      : '')
+    : (S.cdGuess.length === 4 ? '四字齐了，可以交' : '再填 ' + (4 - S.cdGuess.length) + ' 个字');
+
+  // 结算面板
+  const rv = $('#cdReveal');
+  if (c.phase === 'reveal' && c.reveal && c.verdict){
+    const rows = c.reveal.rows.map(r =>
+      '<div class="rvrow">' +
+        '<div class="rn2"><b>' + esc(r.name) + '</b><em>' + esc(r.roleName) + '</em></div>' +
+        '<div class="sk' + (r.skill ? ' used' : '') + '">' + (r.skill ? '用技能' : '保留') + '</div>' +
+        '<div class="mark ' + (r.correct ? 'ok' : 'no') + '">' + (r.correct ? '✓ 对上' : '✗ 错') + '</div>' +
+      '</div>').join('');
+    rv.innerHTML = '<div class="reveal">' + rows + '</div>' +
+      '<div class="verdict ' + c.verdict.kind + '">' + esc(c.verdict.text) +
+      '<br><span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--dim-2)">威胁 ' +
+      esc(c.verdict.threat) + ' · 门 ' + esc(c.verdict.door) + '</span></div>';
+  } else {
+    rv.innerHTML = '';
+  }
+}
+
+async function cdSubmit(){
+  const c = S.snap && S.snap.code;
+  if (!c || c.phase !== 'choose' || c.pick) return;
+  if ((S.cdGuess || '').length !== 4){ toast('先把四个字填满'); return; }
+  const res = await api('code', { code:S.me.code, pid:S.me.pid, skill:!!S.cdUseSkill, guess:S.cdGuess });
+  if (res.error){ toast(res.error); return; }
+  toast('交上去了，等其他人');
+}
+
+function renderCodeEnd(){
+  const snap = S.snap, r = snap.result || {};
+  $('#cdeTitle').textContent = r.win ? '天亮了。' : '门倒了。';
+  $('#cdeLead').textContent = r.win
+    ? '五波查寝全挡下来了。宿管在门口站了很久，最后骂了一句「明天再说」就上楼了。'
+    : '最后一波没挡住。明早的通报栏上，221 排在第一个。';
+  $('#cdeWaves').textContent = (r.waves || 1) + ' / 5 波';
+  $('#cdeDoor').textContent = r.door || '—';
+  $('#cdeMvp').textContent = r.mvp || '—';
+  $('#cdeNote').textContent = '（' + (r.reason || '') + '）';
+
+  const players = (r.players || []).slice();
+  $('#cdeRank').innerHTML = players.map((p, i) => {
+    const ach = (p.ach || []).map(a => a.name).join(' · ');
+    return '<li class="crk' + (p.id === snap.me.id ? ' me' : '') + (i === 0 ? ' mvp' : '') + '">' +
+      '<div class="i">0' + (i + 1) + '</div>' +
+      '<div class="n">' + esc(p.name) + '<em>' + esc(p.roleName) + '</em>' + (p.isBot ? '<em>NPC</em>' : '') + '</div>' +
+      '<div class="ach">' + (ach ? esc(ach) : '没有成就') + '</div>' +
+      '<div class="p">' + (p.correct || 0) + ' 对</div>' +
+    '</li>';
+  }).join('');
+}
+
+$('#cdSkill').onclick = () => { S.cdUseSkill = true; renderCode(); };
+$('#cdKeep').onclick = () => { S.cdUseSkill = false; renderCode(); };
+$('#cdSubmit').onclick = cdSubmit;
+$('#btnLeaveCd').onclick = leaveRoom;
+$('#cdeLeave').onclick = leaveRoom;
+$('#cdeAgain').onclick = async () => {
+  const res = await api('again', { code:S.me.code, pid:S.me.pid });
+  if (res.error) toast(res.error);
+};
+
+$('#btnLeaveHunt').onclick = leaveRoom;
+$('#hLeave').onclick = leaveRoom;
+$('#hAgain').onclick = async () => {
+  const res = await api('again', { code:S.me.code, pid:S.me.pid });
+  if (res.error) toast(res.error);
+};
+
+function renderHEnd(){
+  const r = S.snap.result || {};
+  S.snap;
+  const win = !!r.win;
+  $('#hEndTitle').textContent = win ? '鬼被贴出去了。' : '鬼还在楼里。';
+  $('#hEndLead').textContent = win
+    ? '宿管把那个总在走廊晃的人带走了。剩下的五个人装睡，眼睛都没睁开。'
+    : (r.why || '天亮的时候，鬼已经混在人群里跟着下楼了。');
+  $('#hEndGhost').textContent = r.ghostName || '—';
+  $('#hEndRounds').textContent = (r.rounds || 0) + ' / 3 轮';
+  $('#hEndPuzzle').textContent = (r.puzzle || 0) + ' / 6';
+  $('#hEndNote').textContent = (r.misRemoved ? '误投 ' + r.misRemoved + ' 个自己人 · ' : '') + (r.broke ? '被破坏 ' + r.broke + ' 个任务点 · ' : '') + '一局结束。';
+  $('#hEndRank').innerHTML = (r.rows || []).map((p, i) =>
+    '<li class="crk ' + (p.ghost ? 'you' : '') + '">' +
+      '<div class="i">' + String(i + 1).padStart(2, '0') + '</div>' +
+      '<div class="n">' + esc(p.name) + '<em>' + esc(p.roleName) + '</em></div>' +
+      '<div class="ach">' + (p.ghost ? '查寝鬼' : '室友') + (p.alive ? '' : ' · 被带走') + '</div>' +
+      '<div class="p">' + (p.clues || 0) + ' 块</div>' +
+    '</li>').join('');
+}
+
+function esc(s){ return String(s == null ? '' : s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+
+function phaseLabel(phase){
+  return { round:'行动中', vote:'指认中', owl:'关灯了', pick:'最后指认', end:'结算', lobby:'大厅' }[phase] || '';
+}
+
+function remain(until){
+  const t = Math.max(0, (until - (Date.now() + S.offset)) / 1000);
+  const m = Math.floor(t / 60), s = Math.floor(t % 60);
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+function renderGame(){
+  const snap = S.snap, room = snap.room, me = snap.me;
+
+  $('#topPhase').textContent = phaseLabel(room.phase) + ' · 第 ' + room.round + ' 轮';
+  $('#topRound').textContent = room.round + ' / 3';
+  $('#topBudget').textContent = me.time + ' 秒';
+  $('#topCode').textContent = room.code;
+  const endsAt = room.endsAt;
+  $('#topTimer').textContent = endsAt ? remain(endsAt) : '—';
+  $('#topTimerLabel').textContent = room.phase === 'round' ? '本轮剩余' : '本阶段';
+
+  $('#myRole').textContent = me.role ? snap.roles[me.role].name : '—';
+  $('#myName').textContent = me.name;
+  const taskText = me.role ? snap.roles[me.role].task : '还没挑身份';
+  let note = '';
+  if (me.role === 'pink') note = '被夸 ' + me.task.praise + ' / 2';
+  else if (me.role === 'nerd') note = '承认 ' + me.task.admits + ' / 3';
+  else if (me.role === 'dragon') note = '应令 ' + me.task.followed + ' / 3';
+  else if (me.role === 'flo') note = me.task.whisperDone ? '传出去了' : '还没传';
+  else if (me.role === 'gz') note = '学会 ' + me.task.learned + ' / 2';
+  else if (me.role === 'pig') note = me.task.foodFound ? '外卖找到了' : '饿 ' + me.task.hungry + ' / 3';
+  $('#myTask').innerHTML = '秘密任务：<b>' + esc(taskText) + '</b>';
+  $('#myFill').style.width = me.taskPct + '%';
+  $('#myPct').textContent = '进度 ' + me.taskPct + '%';
+  $('#myNote').textContent = note;
+  $('#myMuted').style.display = me.muted ? '' : 'none';
+
+  // 平面图
+  $$('#plan .spot').forEach(g => {
+    const id = g.dataset.id;
+    g.classList.toggle('done', me.searched.includes(id));
+    g.classList.toggle('pickable', room.phase === 'pick');
+  });
+  $('#planHint').textContent = room.phase === 'pick'
+    ? '指一个地方，只要有一人指对全队就活'
+    : '每次搜查 −50 秒 · 翻过的地方会变灰';
+
+  // 口令横幅
+  const cb = $('#callBar');
+  if (snap.call && snap.call.open){
+    const left = remain(snap.call.deadline);
+    const mine = snap.call.by === me.name;
+    cb.style.display = '';
+    cb.innerHTML = `<span class="cl">${esc(snap.call.label)}</span>
+      <span class="cc">${snap.call.count} 人应了 · 还剩 ${left}${mine ? ' · 等人应你' : snap.call.mine ? ' · 你已经应了' : ''}</span>`;
+    cb.classList.toggle('ok', !!snap.call.mine || mine);
+  } else {
+    cb.style.display = 'none';
+    cb.innerHTML = '';
+  }
+
+  // 行动
+  renderActs();
+
+  // 线索
+  const cl = me.clues;
+  $('#clueList').innerHTML = cl.length
+    ? cl.map(c => `<div class="clue"><b>${c.attr}</b><span>${esc(c.text.split('：')[1] || c.text)}</span></div>`).join('')
+    : `<div class="empty">还没有线索。翻一个地方，或者找室友搭话，总会漏一点出来。</div>`;
+
+  // 室友
+  $('#mateList').innerHTML = snap.players.filter(p => p.id !== me.id).map(p => {
+    const st = p.ended ? '停手了' : '';
+    return `<div class="mate">
+      <div class="mn">${esc(p.name)}<em>${p.role ? snap.roles[p.role].name : '?'}</em></div>
+      <div class="st ${p.ended ? 'ready' : ''}">${st}</div>
+      <div class="st">${p.isBot ? 'NPC' : p.online ? '' : '离线'}</div>
+    </div>`;
+  }).join('');
+
+  // 消息流
+  const feed = $('#feed');
+  const atBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 40;
+  feed.innerHTML = snap.feed.map(f => {
+    const d = new Date(f.t);
+    const hh = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    return `<div class="ln ${f.kind}"><i>${hh}</i><span>${esc(f.text)}</span></div>`;
+  }).join('') || '<div class="empty">还没有动静。黑暗里所有人都在等一个声音。</div>';
+  if (atBottom) feed.scrollTop = feed.scrollHeight;
+
+  $('#inMsg').disabled = me.msgUsed || room.phase !== 'round';
+  $('#inMsg').placeholder = me.msgUsed ? '这轮已经说过了' : '说一句话（每轮一次）';
+  $('#btnMsg').disabled = me.msgUsed || room.phase !== 'round';
+}
+
+function canAct(){
+  const snap = S.snap;
+  return snap && snap.room.phase === 'round' && !snap.me.ended && !S.busy;
+}
+
+function renderActs(){
+  const snap = S.snap, me = snap.me, costs = snap.costs;
+  const acts = [];
+  const enough = n => me.time >= n && canAct();
+
+  acts.push({ k:'talk', n:'搭话', d:'挑一个室友，问出一句情报', c:costs.talk + ' 秒', disabled:!enough(costs.talk) });
+  acts.push({ k:'observe', n:'观察全场', d:'看穿谁在偷偷推进任务', c:costs.observe + ' 秒', disabled:!enough(costs.observe) });
+
+  const ROLE_ACTS = {
+    nerd:   { k:'confess', n:'逼问作业', d:'问一个人：作业写完了吗', c:costs.confess + ' 秒' },
+    flo:    { k:'whisper', n:'传暗号', d:'悄悄把「菠萝」告诉一个人', c:costs.whisper + ' 秒' },
+    pig:    { k:'hint',    n:'闻一闻', d:'外卖得靠翻——三个有盖子的地方', c:'免费' }
+  };
+  const ra = ROLE_ACTS[me.role];
+  if (ra){
+    const free = ra.c === '免费';
+    acts.push({ k:'task:' + ra.k, n:ra.n, d:ra.d, c:ra.c, task:true, disabled: free ? !canAct() : !enough(parseInt(ra.c, 10)) });
+  }
+
+  const role = snap.roles[me.role];
+  if (role){
+    const used = me.task.skillUsed;
+    acts.push({
+      k:'skill', n:'【' + role.skill + '】', d: used ? '这局已经用过了' : role.skillDesc,
+      c: used ? '已用' : costs.skill + ' 秒', task:true, disabled: used || !enough(costs.skill)
+    });
+  }
+
+  if (snap.call && snap.call.open && snap.call.by !== me.name && !snap.call.mine){
+    acts.unshift({ k:'react', n:'应一声：' + snap.call.reactText, d: snap.call.by + ' 起的头，应了才算数', c:'免费', task:true, disabled: !canAct() });
+  }
+
+  acts.push({ k:'end', n:'结束本轮', d:'进入指认环节', c:'', end:true, disabled:!canAct() || me.ended });
+
+  $('#acts').innerHTML = acts.map(a =>
+    `<button class="act ${a.task ? 'task' : ''} ${a.end ? 'act-end' : ''}" data-k="${a.k}" ${a.disabled ? 'disabled' : ''}>
+      <span><span class="an">${a.n}</span><span class="ad">${a.d}</span></span>
+      <span class="ac">${a.c}</span>
+    </button>`
+  ).join('');
+
+  $$('#acts .act').forEach(b => { b.onclick = () => onAct(b.dataset.k); });
+}
+
+async function onAct(k){
+  if (k === 'end') return doEndRound();
+  if (k === 'react') return post('react', {});
+  if (k === 'skill') return useSkill();
+  if (k === 'task:whisper') return choosePlayer('把暗号传给谁', pid => post('act', { kind:'task', target:pid }));
+  if (k === 'task:confess') return choosePlayer('问谁：作业写完了吗', pid => post('act', { kind:'task', target:pid }));
+  if (k === 'talk') return choosePlayer('找谁搭话', pid => post('act', { kind:'talk', target:pid }));
+  if (k === 'observe') return choosePlayer('观察谁', pid => post('act', { kind:'observe', target:pid }));
+}
+
+function useSkill(){
+  const snap = S.snap, me = snap.me;
+  if (me.role === 'flo') return choosePlayer('和谁交换一条任务提示', pid => post('skill', { arg: pid }));
+  if (me.role === 'dragon'){ S.panel = 'dragonPick'; S.ovlKey = ''; renderOvl(); return; }
+  return post('skill', {});
+}
+
+async function post(path, body){
+  if (S.busy) return;
+  S.busy = true;
+  try{
+    const res = await api(path, Object.assign({ code:S.me.code, pid:S.me.pid }, body || {}));
+    if (res && res.error) flash(res.error);
+  } finally { S.busy = false; }
+}
+
+let flashTimer = null;
+function flash(msg){
+  let el = $('#flash');
+  if (!el){
+    el = ce('div'); el.id = 'flash';
+    el.style.cssText = 'position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:70;' +
+      'background:#15100a;border:1px solid rgba(242,183,74,.5);color:#f2b74a;font-size:13px;' +
+      'padding:11px 18px;letter-spacing:.04em;max-width:86vw;text-align:center';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => { el.style.display = 'none'; }, 2400);
+}
+
+function doEndRound(){
+  post('endRound', {});
+}
+
+/* ── 浮层 ── */
+function hideOvl(){ $('#ovl').classList.remove('on'); S.ovlKey = ''; S.manual = false; }
+
+function showPanel(key, title, bodyHtml){
+  S.manual = true;
+  S.ovlKey = 'static:' + key;
+  $('#panel').innerHTML = `<div class="kicker">行动</div><h2>${title}</h2>${bodyHtml}
+    <button class="opt" data-close="1" style="margin-top:16px"><span class="on">知道了</span></button>`;
+  $('#ovl').classList.add('on');
+  $$('#panel .opt').forEach(b => { b.onclick = () => hideOvl(); });
+}
+
+function choosePlayer(title, cb){
+  const snap = S.snap;
+  const others = snap.players.filter(p => p.id !== snap.me.id);
+  S.manual = true;
+  S.ovlKey = 'choose';
+  $('#panel').innerHTML = `<div class="kicker">行动</div><h2>${title}</h2>
+    <div class="sub">点一个名字。</div>` +
+    others.map(p => `<button class="opt" data-pid="${p.id}">
+      <span><span class="on">${esc(p.name)}</span><span class="od">${p.role ? snap.roles[p.role].name : '?'}</span></span>
+      <span class="oc">${p.isBot ? 'NPC' : p.online ? '在线' : '离线'}</span>
+    </button>`).join('') +
+    `<button class="opt" data-pid="__close" style="margin-top:14px"><span class="on">算了</span></button>`;
+  $('#ovl').classList.add('on');
+  $$('#panel .opt').forEach(b => {
+    b.onclick = () => {
+      const pid = b.dataset.pid;
+      hideOvl();
+      if (pid !== '__close') cb(pid);
+    };
+  });
+}
+
+function confirmSearch(sid){
+  const snap = S.snap;
+  const name = snap.room.spotNames[sid];
+  S.manual = true;
+  S.ovlKey = 'search';
+  $('#panel').innerHTML = `<div class="kicker">搜查</div><h2>翻一翻${esc(name)}？</h2>
+    <div class="sub">花 50 秒行动预算。翻完会摸到一条线索——如果灯就在这里，全宿舍直接活下来。</div>
+    <button class="opt" data-yes="1"><span class="on">翻一遍</span><span class="oc">−50 秒</span></button>
+    <button class="opt" data-yes="0"><span class="on">算了</span></button>`;
+  $('#ovl').classList.add('on');
+  $$('#panel .opt').forEach(b => {
+    b.onclick = () => { hideOvl(); if (b.dataset.yes === '1') post('act', { kind:'search', spot:sid }); };
+  });
+}
+
+function renderOvl(){
+  const snap = S.snap, room = snap.room, me = snap.me;
+  if (S.manual) return;
+  if (room.phase !== 'vote') S.skipVote = false;
+
+  if (snap.confess && snap.confess.open){
+    const key = 'confess:' + snap.confess.from;
+    if (S.ovlKey !== key){
+      S.ovlKey = key;
+      $('#panel').innerHTML = `<div class="kicker">被点名</div><h2>${esc(snap.confess.from)} 问你：作业写完了吗？</h2>
+        <div class="sub">承认的人，会被记进他的名单。但说谎也没人查得出来。</div>
+        <button class="opt" data-a="1"><span class="on">承认：……没写完</span><span class="oc">老实</span></button>
+        <button class="opt" data-a="0"><span class="on">嘴硬：写完了</span><span class="oc">撑住</span></button>`;
+      $('#ovl').classList.add('on');
+      $$('#panel .opt').forEach(b => {
+        b.onclick = () => { hideOvl(); post('confess', { yes: b.dataset.a === '1' }); };
+      });
+    }
+    return;
+  }
+
+
+  if (S.panel === 'dragonPick'){
+    const key = 'dragonPick';
+    if (S.ovlKey !== key){
+      S.ovlKey = key;
+      $('#panel').innerHTML = `<div class="kicker">龙王降雨</div><h2>让他们做什么？</h2>
+        <div class="sub">没照做的人，这一轮不能投票。</div>
+        <button class="opt" data-a="喝水"><span class="on">喝水</span><span class="oc">最温和</span></button>
+        <button class="opt" data-a="拍桌"><span class="on">拍桌</span><span class="oc">最响</span></button>
+        <button class="opt" data-a="抱头"><span class="on">抱头</span><span class="oc">最丢脸</span></button>`;
+      $('#ovl').classList.add('on');
+      $$('#panel .opt').forEach(b => {
+        b.onclick = () => { S.panel = null; hideOvl(); post('skill', { arg: b.dataset.a }); };
+      });
+    }
+    return;
+  }
+
+  if (room.phase === 'vote'){
+    if (S.skipVote){ hideOvl(); return; }
+    const key = 'vote';
+    if (S.ovlKey !== key){
+      S.ovlKey = key;
+      const others = me.muted ? [] : snap.players.filter(p => p.id !== me.id);
+      $('#panel').innerHTML = `<div class="kicker">第 ${room.round} 轮 / 指认</div><h2>谁最可疑？</h2>
+        <div class="sub">${me.muted ? '你没接龙王的令——这一轮只能看着别人指认。' : '得票最多的人要交出一条线索——全队都听得到。'}</div>` +
+        others.map(p => `<button class="opt" data-t="${p.id}">
+          <span><span class="on">${esc(p.name)}</span><span class="od">${p.role ? snap.roles[p.role].name : '?'}</span></span>
+          <span class="oc">${p.isBot ? 'NPC' : ''}</span>
+        </button>`).join('') +
+        `<button class="opt" data-t="__skip" style="margin-top:12px"><span class="on">弃权</span></button>
+        <div class="timer" id="ovlT">—</div><div class="sub" id="ovlSub"></div>`;
+      $('#ovl').classList.add('on');
+      $$('#panel .opt').forEach(b => {
+        b.onclick = () => {
+          if (b.dataset.t === '__skip'){ S.skipVote = true; hideOvl(); S.skipVote = true; return; }
+          post('vote', { target: b.dataset.t });
+          $$('#panel .opt').forEach(x => x.disabled = true);
+        };
+      });
+    }
+    const t = $('#ovlT'); if (t) t.textContent = '还剩 ' + remain(room.endsAt);
+    const voted = snap.vote && snap.vote.myTarget;
+    const sub = $('#ovlSub');
+    if (sub) sub.textContent = voted
+      ? '你已经投过了，等其他人。已投 ' + (snap.vote ? snap.vote.votedCount : 0) + ' / ' + (snap.vote ? snap.vote.total : 0) + ' 人'
+      : '已投 ' + (snap.vote ? snap.vote.votedCount : 0) + ' / ' + (snap.vote ? snap.vote.total : 0) + ' 人';
+    if (voted) $$('#panel .opt').forEach(x => x.disabled = true);
+    return;
+  }
+
+  if (room.phase === 'owl'){
+    const key = 'owl';
+    if (S.ovlKey !== key){
+      S.ovlKey = key;
+      $('#panel').innerHTML = `<div class="kicker">关灯了</div><h2>所有人闭眼装睡</h2>
+        <div class="sub">等别人先闭。最后一个闭眼的人，名字会被记在本子上。</div>
+        <div id="owlList"></div>
+        <div class="timer" id="ovlT">—</div>`;
+      $('#ovl').classList.add('on');
+    }
+    const sig = snap.owl.closed.length + ':' + snap.owl.meClosed;
+    const list = $('#owlList');
+    if (list && list.dataset.sig !== sig){
+      list.dataset.sig = sig;
+      list.innerHTML = (snap.owl.closed.map(n => `<div class="clue"><b>闭</b><span>${esc(n)}</span></div>`).join('') ||
+        '<div class="empty">还没有人闭眼。</div>') +
+        (snap.owl.meClosed ? '<div class="empty" style="color:var(--amber)">你闭上了眼睛。</div>'
+          : `<button class="opt" data-eyes="1" style="margin-top:14px"><span class="on">闭眼装睡</span><span class="oc">就现在</span></button>`);
+      const eb = list.querySelector('[data-eyes]');
+      if (eb) eb.onclick = () => post('eyes', {});
+    }
+    const t = $('#ovlT'); if (t) t.textContent = '还剩 ' + remain(snap.owl.deadline);
+    return;
+  }
+
+  if (room.phase === 'pick'){
+    const key = 'pick';
+    if (S.ovlKey !== key){
+      S.ovlKey = key;
+      const ids = ['balcony','bunk','drawer','books','closet','water','case','hook'];
+      const myClues = snap.me.clues.map(c => c.value).join(' · ') || '还没拿到任何线索';
+      $('#panel').innerHTML = `<div class="kicker">最后指认</div><h2>灯在哪儿？</h2>
+        <div class="sub">每人指一个地方，只要有一人指对，全宿舍活下来。</div>
+        <div class="sub" style="color:var(--dim-2)">你手上的线索：${esc(myClues)}</div>` +
+        ids.map(id => `<button class="opt" data-s="${id}">
+          <span><span class="on">${esc(snap.room.spotNames[id])}</span><span class="od">${esc((snap.room.spotAttrs[id] || []).join(' · '))}</span></span>
+          <span class="oc">${snap.me.searched.includes(id) ? '翻过' : '没翻'}</span>
+        </button>`).join('') +
+        `<div class="timer" id="ovlT">—</div>`;
+      $('#ovl').classList.add('on');
+      $$('#panel .opt').forEach(b => {
+        b.onclick = () => { post('pick', { spot: b.dataset.s }); $$('#panel .opt').forEach(x => x.disabled = true); };
+      });
+    }
+    const t = $('#ovlT'); if (t) t.textContent = '还剩 ' + remain(room.endsAt);
+    return;
+  }
+
+  hideOvl();
+}
+
+function renderEnd(){
+  const r = S.snap.result;
+  if (!r) return;
+  const win = r.win;
+  $('#endTitle').textContent = win ? '灯亮了。' : '灯没找到。';
+  $('#endTitle').style.color = win ? 'var(--amber)' : 'rgba(239,233,221,.8)';
+  $('#endLead').textContent = win
+    ? '宿管的手电在门口停了半秒，然后挪开了。明天早自习，你们可以装作什么都没发生——除了那份没写完的作业。'
+    : '手电的光扫过整个房间，最后停在空着的插座上。这一夜，221 集体社死。';
+  $('#endLamp').textContent = r.lampName;
+  $('#endWho').textContent = r.found ? r.foundBy : (r.hits && r.hits.length ? r.hits[0] : '没人');
+  $('#endMvp').textContent = r.mvp || '—';
+
+  $('#endRank').innerHTML = r.players.map((p, i) => `
+    <div class="rk ${p.id === S.snap.me.id ? 'me' : ''} ${p.id === r.mvpId ? 'mvp' : ''}">
+      <div class="i">0${i + 1}</div>
+      <div class="n">${esc(p.name)}<em>${p.role ? S.snap.roles[p.role].name : '?'}</em>${p.isBot ? '<em>NPC</em>' : ''}</div>
+      <div class="b"><i style="width:${p.pct}%"></i></div>
+      <div class="p">${p.pct}</div>
+    </div>`).join('');
+
+  const mine = r.players.find(p => p.id === S.snap.me.id);
+  $('#endNote').textContent = (mine && mine.done ? '你完成了自己的秘密任务。' : '你的秘密任务没做完。') +
+    ` 灯在 ${r.lampName}（${r.lampClue.join(' · ')}）。`;
+
+  $('#btnAgain').disabled = false;
+}
+
+/* ── 事件绑定 ── */
+$$('#modePick .modebtn').forEach(b => {
+    const lead = $('#joinLead');
+    if (lead) lead.textContent = b.dataset.m === 'code'
+      ? '同一片网里，六个人各拿一部手机。每波给每人发一条只有自己看得见的碎片，拼出四字暗号，一起把宿管的查寝挡在门外——五波门不倒才算赢。'
+      : '同一片网里，六个人各拿一部手机。建房的人拿到 4 位房间码，剩下的人输码进来——灯只有一个，谁先翻到谁就是今晚的功臣。';
+  b.onclick = () => {
+    S.mode = b.dataset.mode;
+    $$('#modePick .modebtn').forEach(x => x.classList.toggle('on', x === b));
+  };
+});
+
+$('#btnRetry').onclick = async () => { toast(''); await checkConn(); };
+setTimeout(checkConn, 300);
+setInterval(() => { if ($('#scJoin') && $('#scJoin').classList.contains('on')) checkConn(); }, 8000);
+
+$('#btnCreate').onclick = async () => {
+  const name = ($('#inName').value || '').trim() || '房主';
+  const res = await api('create', { name, mode: S.mode });
+  if (res.error) return toast(res.error);
+  S.me = { code:res.code, pid:res.pid, name };
+  store.set(S.me);
+  connect();
+};
+$('#btnJoin').onclick = async () => {
+  const name = ($('#inName').value || '').trim() || '室友';
+  const code = ($('#inCode').value || '').trim().toUpperCase();
+  if (code.length !== 4) return toast('房间码是 4 位');
+  const res = await api('join', { name, code });
+  if (res.error) return toast(res.error);
+  S.me = { code:res.code, pid:res.pid, name };
+  store.set(S.me);
+  connect();
+};
+$('#btnStart').onclick = async () => {
+  const res = await api('start', { code:S.me.code, pid:S.me.pid });
+  if (res.error) return flash(res.error);
+};
+$('#btnMsg').onclick = () => sendMsg();
+$('#inMsg').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
+function sendMsg(){
+  const v = ($('#inMsg').value || '').trim();
+  if (!v) return;
+  $('#inMsg').value = '';
+  post('chat', { text:v });
+}
+$('#btnAgain').onclick = async () => {
+  const res = await api('again', { code:S.me.code, pid:S.me.pid });
+  if (res.error) return flash(res.error);
+};
+$('#btnLeave').onclick = () => leaveRoom();
+$('#btnLeaveLobby').onclick = () => leaveRoom();
+$('#btnLeaveGame').onclick = () => leaveRoom();
+
+async function leaveRoom(){
+  if (S.leaving) return;
+  S.leaving = true;
+  try {
+    if (S.me) await api('leave', S.me);
+  } catch (_) {}
+  if (S.es){ S.es.close(); S.es = null; }
+  if (S.pollTimer){ clearInterval(S.pollTimer); S.pollTimer = null; }
+  store.clear();
+  S.me = null; S.snap = null; S.ovlKey = null; S.skipVote = false; S.leaving = false;
+  hideOvl();
+  history.replaceState(null, '', location.pathname);
+  setScreen('scJoin');
+  $('#inCode').value = '';
+  toast('已经离开房间');
+}
+$$('#plan .spot').forEach(g => {
+  g.addEventListener('click', () => {
+    const snap = S.snap;
+    if (!snap) return;
+    const sid = g.dataset.id;
+    if (snap.room.phase === 'pick'){ post('pick', { spot:sid }); return; }
+    if (!canAct()) return;
+    if (snap.me.searched.includes(sid)) return flash('这里翻过了');
+    if (snap.me.time < 50) return flash('行动预算不够了');
+    confirmSearch(sid);
+  });
+});
+
+// 计时器只走本地，不动 DOM 结构
+setInterval(() => {
+  const snap = S.snap;
+  if (!snap) return;
+  const room = snap.room;
+  if (room.phase === 'round' && room.endsAt){
+    $('#topTimer').textContent = remain(room.endsAt);
+  } else if (room.phase !== 'lobby' && room.phase !== 'end'){
+    const el = $('#ovlT');
+    if (el && room.endsAt) el.textContent = '还剩 ' + remain(room.endsAt);
+  }
+}, 500);
+
+/* ── 启动 ── */
+(function boot(){
+  const qs = new URLSearchParams(location.search);
+  let saved = store.get();
+  if (qs.get('room') && qs.get('pid')) {
+    saved = { code: qs.get('room').toUpperCase(), pid: qs.get('pid'), name: qs.get('name') || '室友' };
+    store.set(saved);
+  }
+  if (qs.get('poll') === '1') S.poll = true;
+  const nameInput = $('#inName');
+  if (nameInput && saved && saved.name) nameInput.value = saved.name;
+  if (!saved || !saved.code || !saved.pid) return;
+  api('resume', saved).then(res => {
+    if (res.error){
+      store.clear();
+      history.replaceState(null, '', location.pathname);
+      return;
+    }
+    S.me = saved;
+    if (qs.get('room')) history.replaceState(null, '', location.pathname + (S.poll ? '?poll=1' : ''));
+    connect();
+  });
+})();
+
+/* ───────── 大逃杀 ───────── */
+/* ══════════════ 大逃杀客户端：Canvas + 摇杆 + 动作轮盘 ══════════════ */
+
+const HU = {
+  ctx: null, canvas: null, raf: 0, snap: null, me: { x: 500, y: 316 },
+  keys: new Set(), joy: null, drag: null, lastSend: 0, scale: 1, offX: 0, offY: 0
+};
+
+function huntEl(id){ return document.getElementById(id); }
+
+function huntInit(){
+  if (HU.canvas) return;
+  HU.canvas = huntEl('huntCanvas');
+  if (!HU.canvas) return;
+  HU.ctx = HU.canvas.getContext('2d');
+
+  const send = (k, body) => api('hunt', Object.assign({ code: S.me.code, pid: S.me.pid, kind: k }, body || {}));
+  const btn = (id, kind, extra) => {
+    const el = huntEl(id);
+    if (!el) return;
+    el.onclick = async () => {
+      const r = await send('act', Object.assign({ act: kind }, extra || {}));
+      if (r && r.error) toast(r.error);
+      else if (r && r.ok) checkConnHunt();
+    };
+  };
+  btn('hActLight', 'light');
+  btn('hActHide', 'hide');
+  btn('hActThrow', 'throw');
+  btn('hActWall', 'wall');
+  btn('hActTask', 'task');
+  btn('hActRepair', 'repair');
+  btn('hActSkill', 'skill');
+  btn('hGdark', 'dark');
+  btn('hGlock', 'lock');
+  btn('hGrush', 'rush');
+  btn('hGbreak', 'break');
+
+  // 键盘
+  const keys = HU.keys;
+  window.addEventListener('keydown', e => {
+    if (!HU.snap) return;
+    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+    keys.add(e.key.toLowerCase());
+  });
+  window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+
+  // 摇杆（画布左半边拖动）
+  HU.canvas.addEventListener('pointerdown', e => {
+    const r = HU.canvas.getBoundingClientRect();
+    const px = (e.clientX - r.left) * (HU.canvas.width / r.width);
+    const py = (e.clientY - r.top) * (HU.canvas.height / r.height);
+    if (HU.snap && HU.snap.phase === 'suspect') {
+      const who = huntPersonAt(px, py);
+      if (who && who.id !== HU.snap.me.id) { huntSticker(who.id); return; }
+    }
+    HU.joy = { x0: px, y0: py, x: px, y: py };
+  });
+  HU.canvas.addEventListener('pointermove', e => {
+    if (!HU.joy) return;
+    const r = HU.canvas.getBoundingClientRect();
+    HU.joy.x = (e.clientX - r.left) * (HU.canvas.width / r.width);
+    HU.joy.y = (e.clientY - r.top) * (HU.canvas.height / r.height);
+  });
+  const up = () => { HU.joy = null; };
+  HU.canvas.addEventListener('pointerup', up);
+  HU.canvas.addEventListener('pointercancel', up);
+  HU.canvas.addEventListener('pointerleave', up);
+
+  HU.raf = requestAnimationFrame(huntLoop);
+}
+
+function checkConnHunt(){ /* 保留占位：出错时 toast 由调用方处理 */ }
+
+async function huntSticker(id){
+  const r = await api('hunt', { code: S.me.code, pid: S.me.pid, kind: 'sticker', target: id });
+  if (r && r.error) toast(r.error);
+}
+
+function huntPersonAt(x, y){
+  if (!HU.snap) return null;
+  for (const p of HU.snap.people) {
+    if (!p.alive || p.x < 0) continue;
+    const px = HU.offX + p.x * HU.scale, py = HU.offY + p.y * HU.scale;
+    if (Math.hypot(px - x, py - y) < 26 * HU.scale / 1.0 + 10) return p;
+  }
+  return null;
+}
+
+function huntResize(){
+  const c = HU.canvas;
+  if (!c) return;
+  const wrap = c.parentElement.getBoundingClientRect();
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const W = Math.max(320, wrap.width), H = Math.min(560, Math.round(W * 0.62));
+  c.style.height = H + 'px';
+  c.width = Math.round(W * dpr);
+  c.height = Math.round(H * dpr);
+  HU.ctx = c.getContext('2d');
+  HU.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  HU.dpr = dpr;
+  HU.vw = W; HU.vh = H;
+  const s = Math.min(W / 1000, H / 620);
+  HU.scale = s;
+  HU.offX = (W - 1000 * s) / 2;
+  HU.offY = (H - 620 * s) / 2;
+}
+
+function huntLoop(){
+  HU.raf = requestAnimationFrame(huntLoop);
+  if (!HU.snap || !HU.ctx) return;
+  huntStep();
+  huntDraw();
+}
+
+function huntStep(){
+  const snap = HU.snap;
+  if (!snap || (snap.phase !== 'hunt' && snap.phase !== 'suspect')) return;
+  const me = snap.me;
+  let dx = 0, dy = 0;
+  const k = HU.keys;
+  if (k.has('a') || k.has('arrowleft')) dx -= 1;
+  if (k.has('d') || k.has('arrowright')) dx += 1;
+  if (k.has('w') || k.has('arrowup')) dy -= 1;
+  if (k.has('s') || k.has('arrowdown')) dy += 1;
+  if (HU.joy) {
+    const jx = HU.joy.x - HU.joy.x0, jy = HU.joy.y - HU.joy.y0;
+    const m = Math.hypot(jx, jy);
+    if (m > 6) { dx += jx / Math.max(m, 46); dy += jy / Math.max(m, 46); }
+  }
+  if (!dx && !dy) return;
+  const m = Math.hypot(dx, dy) || 1;
+  const sp = (me.stun ? 0 : (me.slow ? 120 : 250));
+  const nx = me.x + dx / m * sp * 0.05;
+  const ny = me.y + dy / m * sp * 0.05;
+  const c = huntClamp(nx, ny);
+  me.x = c.x; me.y = c.y;
+  const t = Date.now();
+  if (t - HU.lastSend > 90) {
+    HU.lastSend = t;
+    api('hunt', { code: S.me.code, pid: S.me.pid, kind: 'move', x: Math.round(me.x), y: Math.round(me.y) }).then(r => {
+      if (r && r.ok && typeof r.x === 'number') {
+        if (Math.hypot(r.x - me.x, r.y - me.y) > 46) { me.x = r.x; me.y = r.y; }
+      }
+    });
+  }
+}
+
+function huntClamp(x, y){
+  const A = HU.snap.areas;
+  x = Math.max(20, Math.min(980, x)); y = Math.max(30, Math.min(600, y));
+  for (const a of A) if (x >= a.x && x <= a.x + a.w && y >= a.y && y <= a.y + a.h) return { x, y };
+  let best = { x: 500, y: 316 }, bd = 1e9;
+  for (const a of A) {
+    const cx = Math.max(a.x + 10, Math.min(a.x + a.w - 10, x));
+    const cy = Math.max(a.y + 10, Math.min(a.y + a.h - 10, y));
+    const d = (cx - x) ** 2 + (cy - y) ** 2;
+    if (d < bd) { bd = d; best = { x: cx, y: cy }; }
+  }
+  return best;
+}
+
+function huntDraw(){
+  const c = HU.ctx, snap = HU.snap;
+  const s = HU.scale, ox = HU.offX, oy = HU.offY;
+  const X = v => ox + v * s, Y = v => oy + v * s;
+  c.clearRect(0, 0, HU.vw, HU.vh);
+  c.fillStyle = '#07080a';
+  c.fillRect(0, 0, HU.vw, HU.vh);
+
+  const dark = !snap.lights;
+  // 区域
+  for (const a of snap.areas) {
+    c.beginPath();
+    c.rect(X(a.x), Y(a.y), a.w * s, a.h * s);
+    c.fillStyle = a.kind === 'corridor' ? 'rgba(255,255,255,.035)'
+      : a.kind === 'public' ? 'rgba(143,182,214,.05)' : 'rgba(242,183,74,.045)';
+    c.fill();
+    c.strokeStyle = a.kind === 'corridor' ? 'rgba(255,255,255,.16)' : 'rgba(242,183,74,.3)';
+    c.lineWidth = 1;
+    c.stroke();
+    c.fillStyle = 'rgba(239,233,221,.5)';
+    c.font = '600 ' + Math.round(12.5 * Math.max(0.9, s)) + 'px system-ui, sans-serif';
+    c.textAlign = 'center';
+    c.fillStyle = 'rgba(239,233,221,.62)';
+    c.fillText(a.name, X(a.x + a.w / 2), Y(a.y + 17));
+    if (snap.locked.includes(a.id)) {
+      c.strokeStyle = 'rgba(226,74,52,.9)';
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(X(a.x + a.w / 2) - 8, Y(a.y + a.h / 2));
+      c.lineTo(X(a.x + a.w / 2) + 8, Y(a.y + a.h / 2));
+      c.stroke();
+      c.fillStyle = 'rgba(226,74,52,.9)';
+      c.font = Math.round(9 * Math.max(0.8, s)) + 'px monospace';
+      c.fillText('已上锁', X(a.x + a.w / 2), Y(a.y + a.h / 2) + 16);
+    }
+  }
+
+  // 任务点（六个人各有一个）
+  for (const tk of snap.tasks) {
+    const px = X(tk.x), py = Y(tk.y);
+    c.beginPath();
+    c.arc(px, py, 11 * s, 0, 7);
+    c.strokeStyle = tk.broken ? 'rgba(226,74,52,.9)' : tk.done ? 'rgba(143,191,154,.95)' : 'rgba(242,183,74,.55)';
+    c.lineWidth = 1.6;
+    c.stroke();
+    if (!tk.done && !tk.broken) {
+      c.beginPath();
+      c.arc(px, py, 11 * s, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (tk.p / 3));
+      c.strokeStyle = 'rgba(242,183,74,.95)';
+      c.lineWidth = 2.4;
+      c.stroke();
+    }
+    c.beginPath();
+    c.arc(px, py, 3.2 * s, 0, 7);
+    c.fillStyle = tk.broken ? 'rgba(226,74,52,.95)' : tk.done ? 'rgba(143,191,154,.95)' : 'rgba(242,183,74,.7)';
+    c.fill();
+    c.fillStyle = 'rgba(239,233,221,.62)';
+    c.font = Math.round(10 * Math.max(0.9, s)) + 'px monospace';
+    c.textAlign = 'center';
+    c.fillText(tk.name, px, py + 27 * s);
+    if (tk.done) {
+      c.fillStyle = 'rgba(143,191,154,.95)';
+      c.font = 'bold ' + Math.round(10 * Math.max(0.9, s)) + 'px monospace';
+      c.fillText('✓', px + 13 * s, py - 8 * s);
+    }
+  }
+
+  // 碎片
+  for (const f of snap.frags) {
+    if (!snap.showFrags && !(snap.me.clues.length >= 0 && true)) { /* 默认可见，靠近才看得清 */ }
+    c.beginPath();
+    c.arc(X(f.x), Y(f.y), 5 * s, 0, 7);
+    c.fillStyle = 'rgba(242,183,74,.85)';
+    c.fill();
+  }
+
+  // 区域特效
+  for (const z of snap.zones) {
+    c.beginPath();
+    c.arc(X(z.x), Y(z.y), z.r * s, 0, 7);
+    c.fillStyle = z.kind === 'rain' ? 'rgba(143,182,214,.12)' : 'rgba(200,150,80,.14)';
+    c.fill();
+  }
+  for (const n of snap.noises) {
+    c.beginPath();
+    c.arc(X(n.x), Y(n.y), 16 * s, 0, 7);
+    c.strokeStyle = 'rgba(242,183,74,.7)';
+    c.lineWidth = 1.4;
+    c.stroke();
+  }
+  for (const d of snap.decoys) {
+    c.beginPath();
+    c.arc(X(d.x), Y(d.y), 10 * s, 0, 7);
+    c.strokeStyle = 'rgba(239,233,221,.6)';
+    c.setLineDash([3, 3]);
+    c.stroke();
+    c.setLineDash([]);
+  }
+
+  // 人
+  for (const p of snap.people) {
+    if (!p.alive || p.x < -500) continue;
+    const isMe = p.id === snap.me.id;
+    const px = X(p.x), py = Y(p.y);
+    if (p.hidden && !isMe) {
+      c.beginPath();
+      c.arc(px, py, 6 * s, 0, 7);
+      c.fillStyle = 'rgba(239,233,221,.16)';
+      c.fill();
+      continue;
+    }
+    c.beginPath();
+    c.arc(px, py, 11 * s, 0, 7);
+    c.fillStyle = p.ghost ? 'rgba(226,74,52,.95)' : isMe ? 'rgba(242,183,74,.95)' : 'rgba(239,233,221,.8)';
+    c.fill();
+    if (isMe) {
+      c.beginPath();
+      c.arc(px, py, 16 * s, 0, 7);
+      c.strokeStyle = 'rgba(242,183,74,.5)';
+      c.lineWidth = 1;
+      c.stroke();
+    }
+    c.fillStyle = 'rgba(239,233,221,.86)';
+    c.font = '600 ' + Math.round(11 * Math.max(0.9, s)) + 'px system-ui, sans-serif';
+    c.textAlign = 'center';
+    c.fillText(p.name, px, py - 16 * s);
+    if (p.sticker) {
+      c.fillStyle = 'rgba(226,74,52,.9)';
+      c.font = 'bold ' + Math.round(10 * Math.max(0.8, s)) + 'px monospace';
+      c.fillText('?', px + 12 * s, py - 8 * s);
+    }
+  }
+
+  // 摇杆
+  if (HU.joy) {
+    const j = HU.joy;
+    c.beginPath(); c.arc(j.x0, j.y0, 40, 0, 7);
+    c.strokeStyle = 'rgba(242,183,74,.35)'; c.stroke();
+    c.beginPath(); c.arc(j.x, j.y, 18, 0, 7);
+    c.fillStyle = 'rgba(242,183,74,.55)'; c.fill();
+  }
+
+  // 黑暗遮罩
+  if (dark) {
+    const g = c.createRadialGradient(X(snap.me.x), Y(snap.me.y), 30, X(snap.me.x), Y(snap.me.y), 460);
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(.55, 'rgba(0,0,0,.55)');
+    g.addColorStop(1, 'rgba(0,0,0,.86)');
+    c.fillStyle = g;
+    c.fillRect(0, 0, HU.vw, HU.vh);
+  }
+  if (snap.ghostExposed) {
+    c.strokeStyle = 'rgba(226,74,52,.7)';
+    c.lineWidth = 3;
+    c.strokeRect(2, 2, HU.vw - 4, HU.vh - 4);
+  }
+}
+
+function renderHunt(){
+  const h = S.snap && S.snap.hunt;
+  if (!h) return;
+  HU.snap = h;
+  huntInit();
+  huntResize();
+  const me = h.me;
+  if (Math.hypot(me.x - HU.me.x, me.y - HU.me.y) > 240) { HU.me.x = me.x; HU.me.y = me.y; }
+  h.me.x = HU.me.x; h.me.y = HU.me.y;
+
+  const secs = Math.max(0, Math.round((h.endsAt - (S.snap.srvNow || Date.now())) / 1000));
+  huntEl('hRound').textContent = '第 ' + h.round + ' / 3 轮';
+  huntEl('hTimer').textContent = h.phase === 'suspect' ? '贴纸 ' + secs + 's' : h.phase === 'reveal' ? '揭晓 ' + secs + 's' : secs + 's';
+  huntEl('hPhase').textContent = h.phase === 'hunt' ? '跑图' : h.phase === 'suspect' ? '贴纸阶段' : h.phase === 'reveal' ? '揭晓' : '结束';
+  huntEl('hPuzzle').textContent = '拼图 ' + h.puzzle + ' / 6';
+  huntEl('hBroken').textContent = '破坏 ' + h.broke + ' / 3';
+  const doneEl = huntEl('hDone');
+  if (doneEl) doneEl.textContent = '任务 ' + (h.taskDone || 0) + ' / 6';
+  huntEl('hMine').textContent = h.isGhost ? '你是查寝鬼' : '你是室友';
+  huntEl('hMine').className = h.isGhost ? 'bad' : 'good';
+
+  const ghostBox = huntEl('hGhostBox');
+  if (ghostBox) ghostBox.hidden = !h.isGhost;
+  const skillBtn = huntEl('hActSkill');
+  if (skillBtn) {
+    skillBtn.disabled = !!h.skill.used || h.phase !== 'hunt';
+    skillBtn.title = h.skill.desc;
+    huntEl('hSkillName').textContent = h.skill.skill || '技能';
+  }
+  huntEl('hActLight').disabled = h.phase !== 'hunt';
+  huntEl('hActHide').disabled = h.phase !== 'hunt';
+  huntEl('hActThrow').disabled = h.phase !== 'hunt';
+  huntEl('hActWall').disabled = h.phase !== 'hunt';
+  const nearTask = (h.tasks || []).find(t => Math.hypot(t.x - me.x, t.y - me.y) < (t.near || 70));
+  const taskBtn = huntEl('hActTask'), repBtn = huntEl('hActRepair');
+  if (taskBtn) {
+    const usable = h.phase === 'hunt' && nearTask && !nearTask.done && !nearTask.broken;
+    taskBtn.disabled = !usable;
+    const nm = huntEl('hTaskName');
+    if (nm) nm.textContent = nearTask
+      ? (nearTask.broken ? nearTask.name + ' 坏了' : nearTask.done ? nearTask.name + ' 已完成' : nearTask.name + ' ' + nearTask.p + '/3')
+      : '靠近任务点';
+  }
+  if (repBtn) repBtn.disabled = !(h.phase === 'hunt' && nearTask && nearTask.broken);
+  const isGhost = !!h.isGhost;
+  if (isGhost && taskBtn) { taskBtn.disabled = true; const nm2 = huntEl('hTaskName'); if (nm2) nm2.textContent = '鬼不做任务'; }
+  if (isGhost && repBtn) { repBtn.disabled = true; }
+
+  const cluesEl = huntEl('hClues');
+  if (cluesEl) cluesEl.innerHTML = (me.clues || []).length
+    ? me.clues.map(t => '<div class="cl">' + t + '</div>').join('')
+    : '还没有';
+
+  const banner = huntEl('hBanner');
+  if (banner) {
+    if (h.phase === 'suspect') banner.textContent = me.stickerUsed ? '你已经贴过了，等别人' : '点你想怀疑的人贴一张「?」贴纸（得走到他面前）';
+    else if (h.phase === 'reveal') banner.textContent = (S.snap.feed.slice(-1)[0] || {}).text || '揭晓中…';
+    else banner.textContent = h.lights ? '跑图：捡碎片、修任务点，别被鬼抓到破坏机会' : '灯被拉掉了——视野变小，靠屏幕边缘判断方向';
+  }
+}
+
+
+
+})();
+</script>
+</body>
+</html>

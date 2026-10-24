@@ -1,0 +1,9 @@
+﻿{
+  "name": "dorm221",
+  "version": "1.0.0",
+  "private": true,
+  "description": "221宿舍：断电后的最后一夜 —— 联机版（搜查版 / 暗号版 / 大逃杀）",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}

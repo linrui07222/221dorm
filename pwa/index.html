@@ -1,0 +1,2420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>221宿舍 · 断电后的最后一夜</title>
+<style>
+  :root{
+    --bg:#07080a;
+    --line:rgba(255,255,255,.09);
+    --line-2:rgba(255,255,255,.16);
+    --paper:#efe9dd;
+    --dim:#85837c;
+    --dim-2:#5d5c57;
+    --amber:#f2b74a;
+    --amber-soft:rgba(242,183,74,.12);
+    --blue:#8fb6d6;
+    --red:#d97a68;
+    --green:#8fbf9a;
+    --sans:"Inter","PingFang SC","HarmonyOS Sans SC","Microsoft YaHei","Hiragino Sans GB",system-ui,sans-serif;
+    --serif:"Noto Serif SC","Source Han Serif SC","Songti SC","STSong",Georgia,"SimSun",serif;
+    --mono:"JetBrains Mono","SFMono-Regular",Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);color:var(--paper);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;line-height:1.55;
+    overflow-x:hidden;min-height:100svh;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(120% 80% at 50% 118%,rgba(242,183,74,.11),transparent 62%);
+    transition:opacity .8s;
+  }
+  body.lit::before{background:radial-gradient(120% 90% at 50% 110%,rgba(242,183,74,.24),transparent 68%)}
+  body::after{
+    content:"";position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  ::selection{background:rgba(242,183,74,.28)}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  .screen{position:relative;z-index:2}
+  .screen:not(.on){display:none!important}
+  .screen.on{display:block;animation:fadeUp .5s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .kicker{
+    font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--dim);
+  }
+  .hair{height:1px;background:var(--line);border:0}
+
+  /* ---------- cover ---------- */
+  .cover{min-height:100svh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+  .cover-ghost{
+    position:absolute;right:-4vw;top:46%;transform:translateY(-50%);
+    font-family:var(--serif);font-size:clamp(220px,46vw,560px);line-height:.8;
+    color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.045);
+    letter-spacing:-.02em;pointer-events:none;user-select:none;
+  }
+  .cover-inner{position:relative;width:100%;max-width:1240px;margin:0 auto;padding:96px 32px 40px}
+  .cover .kicker{color:var(--amber);opacity:.85}
+  .cover h1{
+    font-family:var(--serif);font-weight:600;font-size:clamp(74px,15vw,182px);
+    line-height:.92;letter-spacing:-.03em;margin:18px 0 6px;
+  }
+  .cover .sub{
+    font-family:var(--serif);font-size:clamp(19px,2.6vw,30px);color:rgba(239,233,221,.62);
+    letter-spacing:.16em;margin-bottom:38px;
+  }
+  .cover .lede{
+    max-width:30em;font-size:15px;line-height:1.95;color:rgba(239,233,221,.66);
+  }
+  .cover-actions{display:flex;align-items:center;gap:22px;margin:44px 0 0;flex-wrap:wrap}
+  .btn{
+    display:inline-flex;align-items:center;gap:14px;border-radius:2px;
+    padding:15px 26px;font-size:15px;font-weight:600;letter-spacing:.04em;
+    transition:transform .25s ease,box-shadow .25s ease,background .25s,color .25s,border-color .25s;
+  }
+  .btn-primary{background:var(--amber);color:#1b1204}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 18px 44px -16px rgba(242,183,74,.75)}
+  .btn-primary span{transition:transform .25s}
+  .btn-primary:hover span{transform:translateX(4px)}
+  .btn-ghost{border:1px solid var(--line-2);color:rgba(239,233,221,.8)}
+  .btn-ghost:hover{border-color:rgba(239,233,221,.45);background:rgba(255,255,255,.03)}
+  .cover-meta{
+    display:flex;gap:28px;flex-wrap:wrap;margin-top:56px;padding-top:20px;
+    border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;
+    letter-spacing:.14em;color:var(--dim-2);
+  }
+  .cover-meta span::before{content:"·";margin-right:10px;color:rgba(242,183,74,.5)}
+  .cover-meta span:first-child::before{content:none;margin:0}
+  .cover-foot{
+    position:absolute;left:32px;right:32px;bottom:22px;display:flex;justify-content:space-between;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:rgba(133,131,124,.5);
+  }
+  @media (max-width:700px){
+    .cover-inner{padding:80px 22px 30px}
+    .cover-foot{left:22px;right:22px;font-size:9.5px;letter-spacing:.12em}
+  }
+
+  /* ---------- select ---------- */
+  .wrap{max-width:1060px;margin:0 auto;padding:56px 28px 80px}
+  .sec-head{margin-bottom:34px}
+  .sec-head h2{font-family:var(--serif);font-size:clamp(32px,5vw,48px);font-weight:600;letter-spacing:-.01em;margin:14px 0 12px}
+  .sec-head p{color:var(--dim);font-size:14px;max-width:36em}
+  .roles{list-style:none;border-top:1px solid var(--line)}
+  .role-row{
+    display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:22px;
+    padding:22px 10px;border-bottom:1px solid var(--line);cursor:pointer;
+    transition:background .25s,padding .25s;position:relative;
+  }
+  .role-row::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--amber);
+    transform:scaleY(0);transform-origin:top;transition:transform .3s;
+  }
+  .role-row:hover{background:rgba(255,255,255,.022);padding-left:18px}
+  .role-row:hover::before,.role-row.on::before{transform:scaleY(1)}
+  .role-row.on{background:rgba(242,183,74,.055)}
+  .role-row .num{font-family:var(--mono);font-size:12px;color:var(--dim-2);letter-spacing:.1em}
+  .role-row.on .num{color:var(--amber)}
+  .role-row h3{font-size:20px;font-weight:600;letter-spacing:.02em;display:flex;align-items:baseline;gap:10px}
+  .role-row h3 em{font-style:normal;font-size:12px;color:var(--dim-2);font-family:var(--mono);letter-spacing:.08em}
+  .role-row p{font-size:13px;color:var(--dim);margin-top:3px}
+  .role-row .sk{font-family:var(--mono);font-size:11px;letter-spacing:.02em;color:var(--dim-2);margin-top:6px}
+.role-row .diff{font-family:var(--mono);font-size:11px;color:var(--dim-2);letter-spacing:.18em}
+  .select-foot{
+    display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:32px;flex-wrap:wrap;
+  }
+  .select-foot .hint{font-size:12px;color:var(--dim-2);max-width:34em}
+  .btn[disabled]{opacity:.3;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+  /* ---------- game ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:26px;
+    padding:14px 28px;border-bottom:1px solid var(--line);
+    background:rgba(7,8,10,.82);backdrop-filter:blur(14px);
+  }
+  .brand{font-family:var(--serif);font-size:17px;letter-spacing:.02em;white-space:nowrap}
+  .brand span{color:var(--dim-2);font-size:12px;margin-left:6px;letter-spacing:.2em}
+  .hud{display:flex;align-items:center;gap:30px;margin-left:auto;flex-wrap:wrap}
+  .hud-item{display:flex;flex-direction:column;gap:2px;min-width:66px}
+  .hud-item .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--dim-2)}
+  .hud-item b{font-family:var(--mono);font-size:15px;font-weight:500;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+  .hud-item.battery b{color:var(--amber)}
+  .bat{width:34px;height:5px;border:1px solid rgba(242,183,74,.4);padding:1px;margin-top:3px;border-radius:1px}
+  .bat i{display:block;height:100%;width:100%;background:var(--amber);transition:width .4s}
+  .tbtn{
+    font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--dim);
+    border:1px solid var(--line-2);padding:8px 14px;border-radius:2px;transition:.2s;
+  }
+  .tbtn:hover{color:var(--paper);border-color:rgba(239,233,221,.4)}
+
+  .stage{
+    max-width:1360px;margin:0 auto;padding:26px 28px 64px;
+    display:grid;grid-template-columns:minmax(0,1fr) 392px;gap:44px;align-items:start;
+  }
+  .plan-wrap{position:relative;min-width:0}
+  .plan-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:14px}
+  .plan-head span{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;color:var(--dim)}
+  .plan-head em{font-style:normal;font-size:11.5px;color:var(--dim-2)}
+  .plan-frame{position:relative}
+  #plan{width:100%;height:auto;display:block;overflow:visible}
+  #plan .room{fill:rgba(255,255,255,.012);stroke:rgba(255,255,255,.13);stroke-width:1.4}
+  #plan .win{stroke:rgba(143,182,214,.55);stroke-width:2.4;stroke-linecap:round}
+  #plan .win2{stroke:rgba(143,182,214,.18);stroke-width:1;stroke-linecap:round}
+  #plan .doorline{stroke:rgba(239,233,221,.3);stroke-width:1.4;stroke-linecap:round}
+  #plan .arc{fill:none;stroke:rgba(239,233,221,.16);stroke-width:1;stroke-dasharray:3 4}
+  #plan .note{font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;fill:rgba(133,131,124,.55)}
+  #plan .spot{cursor:pointer;outline:none}
+  #plan .spot rect{fill:rgba(255,255,255,.03);stroke:rgba(255,255,255,.21);stroke-width:1.2;transition:fill .25s,stroke .25s}
+  #plan .spot text{
+    fill:rgba(239,233,221,.68);font-size:15.5px;letter-spacing:.08em;text-anchor:middle;
+    dominant-baseline:middle;transition:fill .25s;font-family:var(--sans);pointer-events:none;user-select:none;
+  }
+  #plan .spot:hover rect,#plan .spot:focus-visible rect{fill:rgba(242,183,74,.075);stroke:rgba(242,183,74,.6)}
+  #plan .spot:hover text,#plan .spot:focus-visible text{fill:var(--amber)}
+  #plan .spot.done rect{stroke-dasharray:3 5;fill:rgba(255,255,255,.008);stroke:rgba(255,255,255,.1)}
+  #plan .spot.done text{fill:rgba(239,233,221,.22)}
+  #plan .spot.lit rect{fill:rgba(242,183,74,.18);stroke:var(--amber);filter:drop-shadow(0 0 22px rgba(242,183,74,.55))}
+  #plan .spot.lit text{fill:#fff3d6}
+  #plan .tick{fill:rgba(217,122,104,.5);font-family:var(--mono);font-size:13px;text-anchor:middle;dominant-baseline:middle;pointer-events:none}
+  @keyframes scanPulse{0%{opacity:.9;transform:scale(.85)}100%{opacity:0;transform:scale(1.7)}}
+  #plan .scan{transform-box:fill-box;transform-origin:center;animation:scanPulse .65s ease-out forwards}
+
+  .banner{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    pointer-events:none;opacity:0;
+  }
+  .banner.show{animation:bannerAnim 2.1s ease both}
+  .banner b{
+    font-family:var(--serif);font-size:clamp(30px,5vw,52px);font-weight:600;letter-spacing:.06em;
+    color:rgba(239,233,221,.92);text-shadow:0 0 60px rgba(242,183,74,.5);
+  }
+  @keyframes bannerAnim{0%{opacity:0;transform:scale(1.04)}15%{opacity:1;transform:none}70%{opacity:1}100%{opacity:0}}
+
+  .feed{margin-top:20px;border-top:1px solid var(--line);padding-top:14px;min-height:112px}
+  .feed-line{
+    display:flex;gap:12px;font-size:12.5px;line-height:1.7;color:rgba(239,233,221,.62);
+    padding:3px 0;animation:lineIn .35s ease both;
+  }
+  .feed-line .fm{flex:0 0 auto;width:44px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--dim-2);padding-top:4px}
+  .feed-line.clue{color:var(--amber)}
+  .feed-line.bad{color:var(--red)}
+  .feed-line.good{color:var(--green)}
+  .feed-line.win{color:#ffd98a}
+  .feed-line.sys{color:var(--dim)}
+  @keyframes lineIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+  .side{display:flex;flex-direction:column;gap:26px;position:sticky;top:84px}
+  .sect{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--dim-2);margin-bottom:12px;
+  }
+  .sect em{font-style:normal;font-size:10px;letter-spacing:.1em;color:rgba(133,131,124,.7)}
+
+  .role-box .rname{display:flex;align-items:baseline;gap:10px}
+  .role-box .rname h3{font-family:var(--serif);font-size:26px;font-weight:600;letter-spacing:.04em}
+  .role-box .rname em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--dim-2);letter-spacing:.14em}
+  .role-box .rtask{font-size:13px;color:rgba(239,233,221,.72);margin-top:8px}
+  .role-box .rtask b{color:var(--amber);font-weight:500}
+  .bar{height:3px;background:rgba(255,255,255,.08);margin-top:16px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--amber);width:0;transition:width .5s cubic-bezier(.2,.7,.3,1)}
+  .taskmeta{display:flex;justify-content:space-between;margin-top:9px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--dim)}
+
+  .acts{display:flex;flex-direction:column;gap:8px}
+  .act{
+    display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;
+    padding:13px 16px;border:1px solid var(--line);border-radius:2px;
+    transition:border-color .2s,background .2s,transform .2s;position:relative;
+  }
+  .act b{font-size:14px;font-weight:600;letter-spacing:.03em}
+  .act span{font-size:11px;color:var(--dim-2);letter-spacing:.02em}
+  .act:hover:not([disabled]){border-color:rgba(239,233,221,.3);background:rgba(255,255,255,.028);transform:translateX(2px)}
+  .act-main{border-color:rgba(242,183,74,.32);background:rgba(242,183,74,.055)}
+  .act-main b{color:var(--amber)}
+  .act-end{margin-top:6px;border-style:dashed}
+  .act-end b{color:rgba(239,233,221,.8)}
+  .act[disabled]{opacity:.32;cursor:not-allowed}
+  .act.pulse{animation:endPulse 1.8s ease-in-out infinite}
+  @keyframes endPulse{0%,100%{border-color:rgba(242,183,74,.3)}50%{border-color:rgba(242,183,74,.85);background:rgba(242,183,74,.08)}}
+
+  .clue-list{list-style:none;display:flex;flex-direction:column;gap:7px}
+  .clue-list li{font-size:12px;color:rgba(239,233,221,.62);display:flex;gap:10px;line-height:1.6}
+  .clue-list li i{
+    flex:0 0 auto;font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.1em;
+    color:var(--amber);border:1px solid rgba(242,183,74,.3);padding:1px 5px;height:16px;line-height:14px;margin-top:1px;
+  }
+  .clue-list li.empty{color:var(--dim-2);font-style:italic}
+  .clue-foot{margin-top:10px;font-size:11px;color:var(--dim-2)}
+  .clue-foot b{color:var(--amber);font-weight:500}
+
+  .mate-list{list-style:none;display:flex;flex-direction:column}
+  .mate{
+    display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;
+    padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12.5px;
+  }
+  .mate:last-child{border-bottom:0}
+  .mate .mn{letter-spacing:.04em}
+  .mate .mr{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--dim-2)}
+  .mate .mp{font-family:var(--mono);font-size:10px;color:var(--dim-2);letter-spacing:.05em}
+  .mate.talked .mn{color:rgba(239,233,221,.95)}
+  .mate .mp.hi{color:var(--amber)}
+
+  /* ---------- modal ---------- */
+  .modal{
+    position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;
+    padding:22px;background:rgba(4,5,6,.78);backdrop-filter:blur(8px);
+  }
+  .modal.on{display:flex;animation:fadeIn .28s ease both}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal-panel{
+    width:100%;max-width:560px;max-height:90svh;overflow:auto;
+    background:#0b0d10;border:1px solid rgba(255,255,255,.12);
+    padding:32px;position:relative;animation:panelIn .38s cubic-bezier(.2,.8,.25,1) both;
+  }
+  .modal-panel::before{content:"";position:absolute;left:0;top:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(242,183,74,.7),transparent)}
+  @keyframes panelIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+  .modal-panel h3{font-family:var(--serif);font-size:26px;font-weight:600;letter-spacing:.02em;margin:10px 0 8px}
+  .modal-panel .msub{font-size:12.5px;color:var(--dim);line-height:1.8;margin-bottom:22px}
+  .pick-list{list-style:none;border-top:1px solid var(--line)}
+  .pick{
+    display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+    padding:14px 8px;border-bottom:1px solid var(--line);transition:background .2s,padding .2s;
+  }
+  .pick:hover{background:rgba(255,255,255,.03);padding-left:14px}
+  .pick b{font-size:14px;font-weight:600}
+  .pick em{font-style:normal;font-family:var(--mono);font-size:10px;color:var(--dim-2);letter-spacing:.1em}
+  .pick .pe{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.1em}
+  .pick[disabled]{opacity:.28;cursor:not-allowed;padding-left:8px}
+  .modal-x{position:absolute;right:18px;top:14px;font-size:18px;color:var(--dim-2);padding:6px}
+  .modal-x:hover{color:var(--paper)}
+  .rules h4{font-size:13px;letter-spacing:.06em;margin:22px 0 10px;color:var(--amber)}
+  .rules p,.rules li{font-size:12.5px;line-height:1.9;color:rgba(239,233,221,.66)}
+  .rules ol{padding-left:18px;display:flex;flex-direction:column;gap:5px}
+  .rules .tag{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--dim-2)}
+
+  /* owl minigame */
+  .owl-stage{display:flex;flex-direction:column;gap:12px;margin:8px 0 24px}
+  .owl-row{
+    display:flex;align-items:center;gap:14px;padding:10px 12px;border:1px solid var(--line);
+    transition:.5s;background:rgba(255,255,255,.015);
+  }
+  .owl-row .on{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--dim)}
+  .owl-row .nm{font-size:13px}
+  .owl-row .st{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--blue)}
+  .owl-row.sleep{opacity:.42;border-color:rgba(255,255,255,.05)}
+  .owl-row.sleep .st{color:var(--dim-2)}
+  .owl-btn{
+    width:100%;padding:18px;border:1px solid rgba(242,183,74,.35);color:var(--amber);
+    font-size:15px;font-weight:600;letter-spacing:.1em;transition:.25s;
+  }
+  .owl-btn.ready{animation:owlPulse 1s ease-in-out infinite;border-color:var(--amber);background:rgba(242,183,74,.12)}
+  @keyframes owlPulse{0%,100%{box-shadow:0 0 0 0 rgba(242,183,74,.35)}60%{box-shadow:0 0 0 14px rgba(242,183,74,0)}}
+  .owl-bar{height:2px;background:rgba(255,255,255,.08);margin-top:16px}
+  .owl-bar i{display:block;height:100%;background:var(--amber);width:0}
+
+  /* ---------- end ---------- */
+  .end{min-height:100svh;padding:64px 28px 80px}
+  .end-inner{max-width:900px;margin:0 auto}
+  .end-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--dim-2)}
+  .end h1{
+    font-family:var(--serif);font-weight:600;font-size:clamp(48px,10vw,104px);
+    line-height:1;letter-spacing:-.02em;margin:20px 0 18px;
+  }
+  .end.survive h1{color:var(--amber);text-shadow:0 0 80px rgba(242,183,74,.35)}
+  .end.dead h1{color:rgba(239,233,221,.85)}
+  .end-sub{font-size:14px;color:rgba(239,233,221,.6);max-width:34em;line-height:1.9}
+  .end-facts{display:flex;gap:44px;flex-wrap:wrap;margin:34px 0 42px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .end-facts div span{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--dim-2);margin-bottom:5px}
+  .end-facts div b{font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:.03em}
+  .end-facts div b.amber{color:var(--amber)}
+  .rank-list{list-style:none;margin-top:14px;border-top:1px solid var(--line)}
+  .rank{display:grid;grid-template-columns:24px 92px 1fr 52px;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+  .rank .ri{font-family:var(--mono);font-size:10px;color:var(--dim-2)}
+  .rank .rn{letter-spacing:.03em;display:flex;gap:8px;align-items:baseline}
+  .rank .rn em{font-style:normal;font-family:var(--mono);font-size:9px;color:var(--dim-2);letter-spacing:.08em}
+  .rank .rb{height:2px;background:rgba(255,255,255,.07);overflow:hidden}
+  .rank .rb i{display:block;height:100%;background:rgba(239,233,221,.3);width:0;animation:grow 1s .2s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes grow{from{width:0!important}}
+  .rank .rp{font-family:var(--mono);font-size:11px;text-align:right;color:var(--dim)}
+  .rank.you .rn{color:var(--amber)}
+  .rank.you .rb i{background:var(--amber)}
+  .rank.mvp .rp{color:var(--amber)}
+  .rank.mvp .rn::after{content:"MVP";font-family:var(--mono);font-size:8px;letter-spacing:.12em;color:#1b1204;background:var(--amber);padding:1px 5px}
+  .end-note{margin-top:16px;font-size:12px;color:var(--dim-2);line-height:1.8}
+  .end-actions{display:flex;gap:14px;margin-top:44px;flex-wrap:wrap}
+  .toast{
+    position:fixed;left:50%;bottom:36px;transform:translate(-50%,12px);z-index:90;
+    background:rgba(20,22,26,.96);border:1px solid var(--line-2);padding:11px 20px;
+    font-size:12.5px;letter-spacing:.03em;opacity:0;pointer-events:none;transition:.3s;
+  }
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+
+  @media (max-width:1080px){
+    .stage{grid-template-columns:1fr;gap:32px;padding:20px 20px 60px}
+    .side{position:static}
+    .plan-head em{display:none}
+  }
+  @media (max-width:600px){
+    .topbar{padding:12px 16px;gap:14px;flex-wrap:wrap}
+    .hud{gap:18px}
+    .brand span{display:none}
+    .role-row{grid-template-columns:34px 1fr;gap:14px;padding:18px 6px}
+    .role-row .diff{display:none}
+    .wrap{padding:40px 20px 60px}
+    .end{padding:48px 20px 60px}
+    .modal-panel{padding:26px 22px}
+    .rank{grid-template-columns:18px 76px 1fr 40px;gap:10px}
+    .cover-ghost{top:52%;right:-20vw}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  }
+/* ── 单机·暗号版（查寝塔防）样式 ── */
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 26px}
+.modes .mode{display:block;text-align:left;padding:14px 16px;border:1px solid var(--line);background:rgba(255,255,255,.015);
+  color:var(--dim);font-family:var(--sans);font-size:14px;cursor:pointer;transition:border-color .18s,color .18s,background .18s}
+.modes .mode small{display:block;margin-top:6px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--dim-2)}
+.modes .mode:hover{border-color:var(--line-2);color:var(--paper)}
+.modes .mode.on{border-color:var(--amber);color:var(--amber);background:rgba(242,183,74,.06)}
+.modes .mode.on small{color:rgba(242,183,74,.72)}
+
+.kwrap{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:38px;padding-top:30px}
+.khead{display:flex;justify-content:space-between;gap:14px;font-family:var(--mono);font-size:11px;letter-spacing:.09em;
+  color:var(--dim-2);border-bottom:1px solid var(--line);padding-bottom:12px}
+.khead b{color:var(--paper);font-weight:500}
+.kfrag{margin:20px 0 4px;padding:20px 22px;border-left:2px solid var(--amber);background:rgba(255,255,255,.028);
+  font-family:var(--serif);font-size:19px;line-height:1.72;color:var(--paper)}
+.knotes{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.knotes div{font-size:12.5px;line-height:1.65;color:var(--amber);border-left:1px solid rgba(242,183,74,.38);padding-left:11px}
+.kslots{display:flex;gap:10px;margin:22px 0 14px}
+.kslot{flex:1;height:74px;display:grid;place-items:center;border:1px solid var(--line-2);background:rgba(255,255,255,.02);
+  font-family:var(--serif);font-size:32px;color:var(--paper);transition:border-color .18s}
+.kslot.empty{color:transparent}
+.kslot.cur{border-color:var(--amber);background:rgba(242,183,74,.06)}
+.kslot.fixed{border-style:dashed;color:var(--amber)}
+.kpad{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:6px}
+.kpad button{height:46px;border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--paper);
+  font-family:var(--serif);font-size:17px;cursor:pointer;transition:border-color .16s,color .16s,opacity .16s}
+.kpad button:hover:not(:disabled){border-color:var(--amber);color:var(--amber)}
+.kpad button:disabled{opacity:.24;cursor:default}
+.kpad button.wide{grid-column:span 2;font-family:var(--mono);font-size:11px;letter-spacing:.08em}
+.krow{display:flex;gap:10px;margin-top:20px;align-items:stretch;flex-wrap:wrap}
+.kbtn{flex:1 1 140px;min-height:58px;border:1px solid var(--line-2);background:transparent;color:var(--dim);
+  font-family:var(--sans);font-size:13.5px;line-height:1.4;padding:6px 10px;cursor:pointer}
+.kbtn small{display:block;margin-top:4px;font-family:var(--mono);font-size:10px;letter-spacing:.06em}
+.kbtn.on{border-color:var(--amber);color:var(--amber);background:rgba(242,183,74,.07)}
+.kbtn:disabled{opacity:.35;cursor:default}
+.krow .btn{flex:0 0 168px;min-height:58px}
+.kstate{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--dim-2);margin-top:14px;min-height:18px}
+.kside .kh{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--dim-2);
+  padding-bottom:9px;border-bottom:1px solid var(--line);margin:0 0 14px}
+.kwaves{list-style:none}
+.kwaves li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);
+  font-size:12.5px;color:var(--dim)}
+.kwaves li b{font-weight:500;color:var(--paper);font-family:var(--mono);font-size:11px}
+.kwaves li.ok b{color:var(--amber)}
+.kwaves li.now{color:var(--paper)}
+.kach{list-style:none;display:flex;flex-direction:column;gap:9px}
+.kach li{font-size:12px;line-height:1.55;color:var(--dim);border-left:1px solid var(--line-2);padding-left:10px}
+.kach li.got{color:var(--amber);border-left-color:var(--amber)}
+.krvhead{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--dim-2);border-bottom:1px solid var(--line);padding-bottom:10px;margin-top:14px}
+.krv{display:grid;grid-template-columns:minmax(0,1fr) 78px 56px;gap:12px;align-items:center;padding:11px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+.krv .rn2 b{font-weight:500;color:var(--paper)}
+.krv .rn2 em{font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--dim-2);margin-left:8px;letter-spacing:.08em}
+.krv .sk{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--dim-2)}
+.krv .sk.used{color:var(--amber)}
+.krv .mark{text-align:right;font-family:var(--mono);font-size:11px}
+.krv .mark.ok{color:var(--amber)}
+.krv .mark.no{color:var(--dim-2)}
+.kverdict{margin-top:18px;padding:15px 17px;border-left:2px solid var(--amber);background:rgba(242,183,74,.06);
+  font-size:14px;line-height:1.75;color:var(--paper)}
+.kverdict.chaos{border-left-color:#c8442f;background:rgba(200,68,47,.09)}
+.kverdict.none{border-left-color:var(--line-2);background:rgba(255,255,255,.03)}
+@media (max-width:1080px){
+  .kwrap{grid-template-columns:minmax(0,1fr)}
+  .kside{order:2}
+}
+@media (max-width:700px){
+  .kpad{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .modes{grid-template-columns:1fr}
+  .kfrag{font-size:17px;padding:16px 17px}
+  .kslot{height:62px;font-size:26px}
+}
+
+</style>
+<!-- crt-fx:start -->
+<style id="crt-fx">
+/* ===== 故障 CRT · 断电宿舍恐怖皮肤 =====
+   只改外观：布局、模块位置、文案、交互全部沿用原样式表 */
+:root{
+  --bg:#050506;
+  --paper:#ded7c9;
+  --dim:#8a857c;
+  --dim-2:#5c5850;
+  --amber:#c1372a;
+  --amber-soft:rgba(193,55,42,.14);
+  --blue:#6b8a99;
+  --red:#c33325;
+  --green:#7d9c86;
+  --line:rgba(168,58,44,.18);
+  --line-2:rgba(186,62,46,.34);
+  --blood:#7d1a12;
+}
+html{background:#000}
+body{
+  background:radial-gradient(125% 90% at 50% 26%,#09090a 0%,#050506 60%,#000 100%);
+  color:var(--paper);
+  text-shadow:0 0 1px rgba(255,240,235,.06);
+}
+
+/* ---- 扫描线 + 频闪（轻微偏移） ---- */
+body::before{
+  content:"";position:fixed;inset:-12%;z-index:6;pointer-events:none;opacity:.5;
+  background:
+    repeating-linear-gradient(to bottom,rgba(0,0,0,.42) 0 1px,rgba(0,0,0,0) 1px 4px),
+    repeating-linear-gradient(to right,rgba(255,64,44,.022) 0 1px,transparent 1px 9px);
+  animation:scanJitter 9s steps(60) infinite,screenFlicker 7.4s steps(1) infinite;
+}
+@keyframes scanJitter{
+  0%{transform:translate3d(0,0,0)}25%{transform:translate3d(0,1px,0)}
+  50%{transform:translate3d(0,-1px,0)}75%{transform:translate3d(0,1px,0)}100%{transform:translate3d(0,0,0)}
+}
+@keyframes screenFlicker{
+  0%,93%,96%,100%{opacity:.5}
+  93.4%{opacity:.3}94%{opacity:.54}96.4%{opacity:.38}97%{opacity:.52}
+}
+body.lit::before{opacity:.42}
+
+/* ---- 雪花噪点 ---- */
+body::after{
+  content:"";position:fixed;inset:-14%;z-index:7;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grainShift 1.7s steps(4) infinite;
+}
+@keyframes grainShift{
+  0%{transform:translate3d(0,0,0)}25%{transform:translate3d(-2%,1%,0)}
+  50%{transform:translate3d(1%,-2%,0)}75%{transform:translate3d(-1%,-1%,0)}100%{transform:translate3d(0,0,0)}
+}
+
+/* ---- 显像管外框 + 暗角 + 角落血迹 + 裂痕 ---- */
+html::before{
+  content:"";position:fixed;inset:0;z-index:8;pointer-events:none;
+  border:12px solid #0a0807;
+  box-shadow:
+    inset 0 0 60px 0 rgba(0,0,0,.85),
+    inset 0 0 170px 18px rgba(0,0,0,.45),
+    inset 0 0 40px rgba(126,22,14,.16),
+    0 0 0 1px rgba(122,32,22,.24),
+    0 0 0 12px #050404;
+  background-image:
+    radial-gradient(150px 120px at 0% 0%,rgba(104,14,9,.42),transparent 72%),
+    radial-gradient(190px 140px at 100% 0%,rgba(86,10,6,.34),transparent 74%),
+    radial-gradient(120px 100px at 100% 100%,rgba(74,8,5,.36),transparent 70%),
+    radial-gradient(110px 90px at 0% 100%,rgba(92,12,8,.3),transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='640'%3E%3Cg fill='none' stroke='%23d3cabe' stroke-opacity='.06' stroke-width='1'%3E%3Cpath d='M-20 150 L74 168 L118 112 L182 154 L252 118 L322 168 L404 132 L492 172 L560 140 L660 168'/%3E%3Cpath d='M150 -20 L172 68 L128 122 L178 176 L150 240 L196 296 L162 358 L200 424 L172 490 L214 560'/%3E%3Cpath d='M340 -20 L360 74 L322 128 L372 182 L338 246 L388 300 L352 360'/%3E%3Cpath d='M660 320 L572 344 L528 306 L472 344 L424 316 L380 350'/%3E%3Cpath d='M480 660 L500 580 L462 528 L508 470'/%3E%3C/g%3E%3Cg fill='none' stroke='%23000' stroke-opacity='.34' stroke-width='2.6'%3E%3Cpath d='M-20 150 L74 168 L118 112 L182 154 L252 118 L322 168 L404 132 L492 172 L560 140 L660 168'/%3E%3Cpath d='M150 -20 L172 68 L128 122 L178 176 L150 240 L196 296 L162 358 L200 424 L172 490 L214 560'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat,repeat;
+  background-size:auto,auto,auto,auto,640px 640px;
+  animation:bezelFlicker 11s steps(1) infinite;
+}
+@keyframes bezelFlicker{0%,88%,100%{opacity:1}88.6%{opacity:.9}89.2%{opacity:1}}
+
+/* ---- 前景特效：撕裂故障条 / 角落黑影 / 血迹渗痕 / 夜灯红光 ---- */
+.crt{position:fixed;inset:0;z-index:9;pointer-events:none;overflow:hidden}
+.crt i{position:absolute;display:block}
+
+.crt i:nth-child(1){
+  left:0;right:0;top:0;height:1.8vh;opacity:0;
+  background:linear-gradient(90deg,transparent 4%,rgba(196,38,26,.55) 18%,rgba(255,138,110,.5) 34%,rgba(0,0,0,0) 52%,rgba(206,44,30,.72) 74%,rgba(255,90,60,.35) 88%,transparent);
+  mix-blend-mode:screen;filter:blur(.5px);
+  animation:tearSweep 9.5s steps(1) infinite;
+}
+@keyframes tearSweep{
+  0%,70%{opacity:0;transform:translateY(-3vh) scaleY(1)}
+  70.4%{opacity:.95;transform:translateY(28vh) scaleY(1.5)}
+  71%{opacity:0;transform:translateY(64vh)}
+  86%{opacity:0}
+  86.6%{opacity:.7;transform:translateY(12vh) scaleY(.6)}
+  87.2%{opacity:0}
+  100%{opacity:0}
+}
+
+.crt i:nth-child(2){
+  left:-12vw;bottom:-18vw;width:52vw;height:52vw;opacity:0;border-radius:50%;
+  background:radial-gradient(circle at 50% 50%,rgba(0,0,0,.96),rgba(0,0,0,.5) 44%,transparent 70%);
+  filter:blur(30px);
+  animation:shadowFlash 14s steps(1) infinite;
+}
+@keyframes shadowFlash{
+  0%,58%{opacity:0;transform:translate3d(0,0,0) scale(1)}
+  58.6%{opacity:.8;transform:translate3d(6vw,-4vh,0) scale(1.06)}
+  59.6%{opacity:0}
+  74%{opacity:0;transform:translate3d(0,0,0)}
+  74.5%{opacity:.62;transform:translate3d(54vw,-12vh,0) scale(.9)}
+  75.2%{opacity:0}
+  100%{opacity:0}
+}
+
+.crt i:nth-child(3){
+  right:-4vw;top:-6vh;width:34vw;height:44vh;opacity:.45;
+  background:
+    radial-gradient(42% 62% at 72% 0%,rgba(96,10,6,.48),transparent 68%),
+    radial-gradient(18% 78% at 84% 4%,rgba(122,16,9,.5),transparent 72%),
+    radial-gradient(9% 52% at 66% 6%,rgba(88,10,6,.46),transparent 76%),
+    radial-gradient(6% 34% at 90% 8%,rgba(70,8,5,.46),transparent 80%);
+  filter:blur(2px);
+}
+
+.crt i:nth-child(4){
+  left:0;right:0;bottom:0;height:46vh;opacity:0;transition:opacity 1.6s ease;
+  background:radial-gradient(120% 90% at 50% 112%,rgba(228,86,50,.3),rgba(180,50,30,.1) 44%,transparent 70%);
+}
+body.lit .crt i:nth-child(4){opacity:1}
+
+/* ---- 顶栏 ---- */
+.topbar{
+  z-index:5;
+  background:linear-gradient(180deg,rgba(9,9,10,.96),rgba(4,4,5,.9));
+  border-bottom:1px solid rgba(174,52,38,.3);
+  box-shadow:0 1px 0 rgba(255,80,50,.06),0 14px 34px -22px #000;
+  backdrop-filter:blur(10px) saturate(.85);
+}
+.brand{color:#d7cfc1;text-shadow:0 0 14px rgba(190,60,40,.32)}
+.brand span{color:rgba(186,64,48,.75)}
+.hud-item .k{color:rgba(134,124,114,.95)}
+.hud-item b{
+  color:#e0563a;
+  text-shadow:0 0 12px rgba(210,56,34,.55),1.2px 0 0 rgba(255,46,26,.24),-1.2px 0 0 rgba(60,190,255,.16);
+  animation:hudGlitch 7.6s steps(1) infinite;
+}
+@keyframes hudGlitch{
+  0%,90%,100%{transform:none;opacity:1}
+  90.5%{transform:translateX(1px);opacity:.82}
+  91%{transform:translateX(-1px);opacity:1}
+  95%{opacity:.7}95.4%{opacity:1}
+}
+.hud-item.battery b{color:#e8563a;animation:warnBlink 5.2s steps(1) infinite}
+@keyframes warnBlink{0%,86%,100%{opacity:1}87%{opacity:.35}88%{opacity:1}92%{opacity:.5}93%{opacity:1}}
+.bat{border-color:rgba(208,66,44,.55)}
+.bat i{background:linear-gradient(90deg,#7d1a12,#e0563a)}
+.tbtn{border-color:rgba(172,54,40,.5);color:rgba(198,132,118,.95)}
+.tbtn:hover{color:#f6ddd5;border-color:rgba(230,78,54,.85);box-shadow:0 0 20px -6px rgba(214,54,32,.85)}
+
+/* ---- 平面图（灰白监控底 + 暗红虚线框） ---- */
+#plan{filter:contrast(1.04) saturate(.92)}
+#plan .room{
+  fill:rgba(255,255,255,.014);stroke:rgba(168,58,44,.42);stroke-width:1.2;stroke-dasharray:11 7;
+}
+#plan .win{stroke:rgba(122,164,186,.4);filter:drop-shadow(0 0 6px rgba(122,180,210,.22))}
+#plan .win2{stroke:rgba(122,164,186,.14)}
+#plan .doorline{stroke:rgba(186,62,46,.45)}
+#plan .arc{stroke:rgba(186,62,46,.26)}
+#plan .note{fill:rgba(168,74,58,.72)}
+#plan .spot rect{
+  fill:rgba(152,32,22,.08);stroke:rgba(190,56,42,.7);stroke-width:1.1;stroke-dasharray:7 5;
+  animation:spotIdle 5.6s steps(2,end) infinite;
+}
+@keyframes spotIdle{
+  0%,100%{stroke-opacity:.6;fill-opacity:.9}
+  42%{stroke-opacity:1;fill-opacity:1}
+  58%{stroke-opacity:.44}
+}
+#plan .spot text{
+  font-family:var(--mono);font-size:14.5px;letter-spacing:.16em;
+  fill:rgba(222,212,198,.86);
+  filter:blur(.16px) drop-shadow(1px 0 rgba(255,70,45,.3));
+}
+#plan .spot:hover rect,#plan .spot:focus-visible rect{
+  fill:rgba(198,48,32,.26);stroke:#f2563c;stroke-width:1.7;
+  filter:drop-shadow(0 0 13px rgba(228,62,40,.75));
+  animation:spotGlitch .15s steps(2,end) infinite;
+}
+@keyframes spotGlitch{
+  0%{stroke-opacity:1;fill-opacity:1}
+  50%{stroke-opacity:.32;fill-opacity:.66}
+  100%{stroke-opacity:.94;fill-opacity:.96}
+}
+#plan .spot:hover text,#plan .spot:focus-visible text{
+  fill:#ffd9d0;
+  filter:blur(.3px) drop-shadow(2px 0 rgba(255,34,20,.55)) drop-shadow(-2px 0 rgba(0,190,255,.34));
+  animation:textShift .18s steps(2,end) infinite;
+}
+@keyframes textShift{0%{transform:translateX(0)}50%{transform:translateX(.8px)}100%{transform:translateX(-.7px)}}
+#plan .spot.done rect{stroke-dasharray:2 6;fill:rgba(255,255,255,.008);stroke:rgba(140,52,42,.42);animation:none}
+#plan .spot.done text{fill:rgba(168,158,146,.42)}
+#plan .spot.lit rect{
+  fill:rgba(238,84,48,.24);stroke:#ff7048;filter:drop-shadow(0 0 26px rgba(255,92,54,.65));
+}
+#plan .spot.lit text{fill:#ffe0d2}
+#plan .tick{fill:rgba(232,86,58,.65)}
+
+.banner b{color:#f2d9ce;text-shadow:0 0 40px rgba(228,64,38,.75),0 0 90px rgba(150,20,10,.6)}
+.plan-head span{color:rgba(190,96,76,.95)}
+.plan-head em{color:rgba(158,120,106,.92)}
+
+/* ---- 右侧面板：整块脏污底 + 淡血迹（不压字） ---- */
+.side::before{
+  content:"";position:absolute;inset:-18px -20px;z-index:-1;pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(168,50,36,.34),transparent 9%) left top/100% 100% no-repeat,
+    radial-gradient(150px 100px at 14% 2%,rgba(112,16,10,.2),transparent 76%),
+    radial-gradient(180px 120px at 96% 94%,rgba(94,12,8,.16),transparent 78%),
+    radial-gradient(circle at 50% 50%,rgba(255,255,255,.02),transparent 70%);
+  opacity:.9;filter:blur(.7px);
+}
+.sect{color:rgba(178,92,74,.95);border-color:rgba(158,50,36,.26)}
+.sect em{color:rgba(140,110,100,.9)}
+.role-box .rname h3{color:#eae2d4;text-shadow:0 0 22px rgba(176,46,30,.35),1px 0 0 rgba(255,50,30,.16)}
+.role-box .rname em{color:rgba(150,118,108,.95)}
+.role-box .rtask{color:rgba(220,210,196,.86)}
+.role-box .rtask b{
+  color:#e85a3c;font-weight:500;
+  text-shadow:0 0 14px rgba(220,60,36,.65);
+  animation:taskFlicker 5.8s steps(1) infinite;
+}
+@keyframes taskFlicker{
+  0%,80%,100%{opacity:1}
+  81%{opacity:.42}82%{opacity:1}89%{opacity:.68}90%{opacity:1}
+}
+.bar{background:rgba(255,60,40,.1);box-shadow:inset 0 0 0 1px rgba(168,50,36,.2)}
+.bar i{background:linear-gradient(90deg,#7d1a12,#e0563a);box-shadow:0 0 12px rgba(214,62,38,.55)}
+.taskmeta{color:rgba(190,120,102,.95)}
+
+/* ---- 动作按钮 ---- */
+.act{
+  background:rgba(20,7,6,.62);border:1px solid rgba(162,50,38,.34);
+  transition:border-color .16s,background .16s,transform .16s,box-shadow .16s;
+}
+.act:hover:not([disabled]){
+  border-color:rgba(232,80,54,.78);background:rgba(74,15,11,.66);
+  box-shadow:0 0 24px -12px rgba(224,64,40,.95),inset 0 0 26px rgba(158,26,16,.22);
+}
+.act b{color:#e4dbcd;text-shadow:0 0 10px rgba(255,84,52,.2)}
+.act span{color:rgba(174,156,142,.92)}
+.act-main{border-color:rgba(206,62,44,.62);background:rgba(96,20,14,.44)}
+.act-main b{color:#ec6142;text-shadow:0 0 14px rgba(230,72,44,.6)}
+.act-end{border-style:dashed;border-color:rgba(170,54,40,.46)}
+.act-end b{color:rgba(220,206,192,.9)}
+.act[disabled]{opacity:.32}
+
+/* ---- 线索 / 室友 / 信息流 ---- */
+.clue-list li{color:rgba(222,212,198,.86);font-family:var(--mono);letter-spacing:.01em}
+.clue-list li i{color:#e0563a;border-color:rgba(190,58,42,.5);background:rgba(126,22,15,.24)}
+.clue-list li.empty{color:rgba(152,116,106,.85)}
+.mate{border-bottom:1px solid rgba(158,48,36,.16)}
+.mate .mn{color:rgba(224,214,200,.92)}
+.mate .mp{color:rgba(160,128,116,.9)}
+.mate .mp.hi{color:#e85a3c}
+.feed{border-top:1px solid rgba(168,52,38,.26)}
+.feed-line{font-family:var(--mono);font-size:11.5px;color:rgba(212,202,188,.88);letter-spacing:.01em}
+.feed-line .fm{color:rgba(152,72,58,.85)}
+.feed-line.clue{color:#e2603f;text-shadow:0 0 10px rgba(216,62,38,.4)}
+.feed-line.bad{color:#ef6a4a}
+.feed-line.good{color:#8fb096}
+.feed-line.win{color:#efbe78}
+.feed-line.sys{color:rgba(160,146,136,.88)}
+
+/* ---- 按钮 / 封面 / 选角 / 结算 ---- */
+.btn-primary{
+  background:linear-gradient(180deg,#ab2c1d,#71170f);color:#f7e2da;
+  box-shadow:0 0 0 1px rgba(228,76,52,.38),0 16px 38px -20px rgba(190,32,16,.95);
+  text-shadow:0 0 10px rgba(255,126,94,.32);
+}
+.btn-primary:hover{box-shadow:0 0 0 1px rgba(246,96,64,.66),0 20px 46px -16px rgba(210,42,20,.95)}
+.btn-ghost{border-color:rgba(170,54,40,.5);color:rgba(222,204,196,.9)}
+.btn-ghost:hover{border-color:rgba(232,80,54,.85);background:rgba(126,22,15,.18)}
+
+.cover-ghost{color:transparent;-webkit-text-stroke:1px rgba(186,64,48,.12)}
+.cover .kicker{color:#c1372a;opacity:.92}
+.cover h1{color:#d2cabc;text-shadow:0 0 70px rgba(180,44,28,.32),2px 0 0 rgba(255,50,30,.1),-2px 0 0 rgba(0,180,255,.08)}
+.cover .sub{color:rgba(186,176,164,.6)}
+.cover .lede{color:rgba(196,186,174,.68)}
+.cover-meta span::before{color:rgba(186,64,48,.6)}
+.cover-foot{color:rgba(150,96,84,.55)}
+.sec-head h2{color:#d2cabc;text-shadow:0 0 30px rgba(170,44,28,.3)}
+.roles{border-top:1px solid rgba(160,48,36,.22)}
+.role-row{border-bottom:1px solid rgba(160,48,36,.18)}
+.role-row::before{background:#cf4531}
+.role-row:hover{background:rgba(126,22,15,.18)}
+.role-row.on{background:rgba(158,28,18,.26)}
+.role-row h3{color:rgba(224,216,204,.96)}
+.role-row.on h3{color:#f8e8df}
+.role-row p{color:rgba(164,150,138,.92)}
+.role-row .sk{color:rgba(140,114,104,.95)}
+.role-row .diff{color:rgba(186,70,50,.9)}
+.role-row .num{color:rgba(166,78,64,.85)}
+.end.survive h1{color:#cc3a28;text-shadow:0 0 80px rgba(204,52,32,.42),2px 0 0 rgba(255,60,40,.2),-2px 0 0 rgba(0,200,255,.12)}
+.end.dead h1{color:rgba(228,216,204,.88);text-shadow:0 0 60px rgba(150,20,10,.38)}
+.end-kicker{color:rgba(166,78,64,.95)}
+
+/* ---- 弹窗 ---- */
+.modal{background:rgba(2,2,3,.9)}
+.modal-panel{
+  background:linear-gradient(180deg,#120d0c,#080706);
+  border:1px solid rgba(190,58,42,.46);
+  box-shadow:0 0 0 1px rgba(0,0,0,.88),0 44px 96px -44px #000,inset 0 0 90px rgba(122,16,10,.22);
+}
+.modal-panel::before{background:linear-gradient(90deg,transparent,rgba(224,64,44,.88),transparent)}
+.modal-panel h3{
+  color:#f0e6d9;
+  text-shadow:0 0 26px rgba(184,46,30,.5),1.6px 0 0 rgba(255,44,26,.18),-1.6px 0 0 rgba(0,190,255,.14);
+}
+.modal-panel .msub{color:rgba(172,156,144,.95)}
+.modal-x{color:rgba(172,102,90,.95)}
+.owl-row{border:1px solid rgba(160,50,36,.34);background:rgba(26,8,7,.46)}
+.owl-btn{border:1px solid rgba(190,58,42,.52);color:rgba(230,212,202,.95)}
+.owl-btn.ready{border-color:#ef5740;background:rgba(186,52,34,.22);animation:owlPulse 1.1s ease-in-out infinite}
+.owl-bar{background:rgba(255,60,40,.14)}
+.owl-bar i{background:linear-gradient(90deg,#7d1a12,#e0563a)}
+.opt{border:1px solid rgba(160,50,36,.34);background:rgba(22,8,7,.55)}
+.opt:hover{border-color:rgba(232,80,54,.8);background:rgba(82,16,12,.62)}
+
+/* ---- 小屏 ---- */
+@media (max-width:760px){
+  html::before{border-width:6px;box-shadow:inset 0 0 50px 0 rgba(0,0,0,.85),inset 0 0 120px 40px rgba(0,0,0,.42)}
+  .crt i:nth-child(3){width:52vw;height:34vh}
+  .side::before{inset:-10px -12px}
+}
+@media (prefers-reduced-motion:reduce){
+  body::before,body::after,html::before,.crt i,
+  .hud-item b,.hud-item.battery b,.role-box .rtask b{animation:none!important}
+  #plan .spot rect{animation:none!important}
+}
+
+</style>
+<!-- crt-fx:end -->
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0a0807">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="221宿舍">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" href="/icon-192.png">
+</head>
+<body>
+
+<!-- ================= COVER ================= -->
+<section class="screen cover on" id="scCover">
+  <div class="cover-ghost" aria-hidden="true">221</div>
+  <div class="cover-inner">
+    <div class="kicker">六人 · 三十分钟 · 一盏灯</div>
+    <h1>221宿舍</h1>
+    <p class="sub">断电后的最后一夜</p>
+    <p class="lede">晚上十一点，整层楼跳闸。手机剩 10% 的电，桌上有一份没拆的外卖、一张没写完的作业，还有宿管随时会推开的门。你们得在黑暗里找到那盏备用小夜灯——顺便，别让人发现你在偷偷完成自己的任务。</p>
+    <div class="cover-actions">
+      <button class="btn btn-primary" id="btnStart">推开门 <span>→</span></button>
+      <button class="btn btn-ghost" id="btnRulesCover">怎么玩</button>
+    </div>
+    <div class="cover-meta">
+      <span>一局约 8 分钟</span>
+      <span>单设备可玩</span>
+      <span>6 种身份</span>
+      <span>3 轮定生死</span>
+    </div>
+  </div>
+  <div class="cover-foot">
+    <span>23:07 · 221 室 · 整层停电</span>
+    <span>门缝外面，有手电的光</span>
+  </div>
+</section>
+
+<!-- ================= SELECT ================= -->
+<section class="screen" id="scSelect">
+  <div class="wrap">
+    <div class="modes" id="modeTabs">
+      <button class="mode on" data-m="search">搜查版 <small>3 轮搜查 · 找那盏备用小夜灯</small></button>
+      <button class="mode" data-m="code">暗号版 <small>5 波塔防 · 拼出四字暗号挡宿管</small></button>
+    </div>
+    <div class="sec-head">
+      <span class="kicker">第一步 / 06</span>
+      <h2>选一个身份</h2>
+      <p>每张身份牌背面都有一行小字：你的秘密任务。室友们也有——而且他们不会告诉你。任务完成度最高的人，是今晚的 MVP。</p>
+    </div>
+    <ul class="roles" id="roleList"></ul>
+    <div class="select-foot">
+      <p class="hint" id="hintSearch">提示：身份只影响你的秘密任务和专属动作。找灯的线索对所有人都一样——靠地图、靠指认、靠运气。</p>
+      <p class="hint" id="hintCode" hidden>提示：每一波只给你一张碎片，鬼的名字里藏着暗号的一半。答对 4 人以上才算破解，答错两波门就塌。</p>
+      <button class="btn btn-primary" id="btnGo" disabled>开始这一夜 <span>→</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GAME ================= -->
+<section class="screen" id="scGame">
+  <header class="topbar">
+    <div class="brand">221<span>宿舍</span></div>
+    <div class="hud">
+      <div class="hud-item"><span class="k">轮次</span><b id="hudRound">第 1 / 3 轮</b></div>
+      <div class="hud-item"><span class="k">行动预算</span><b id="hudTime">03:00</b></div>
+      <div class="hud-item battery"><span class="k">电量</span><b id="hudBat">10%</b><span class="bat"><i id="batFill"></i></span></div>
+    </div>
+    <button class="tbtn" id="btnRulesGame">规则</button>
+  </header>
+
+  <main class="stage">
+    <div class="plan-wrap">
+      <div class="plan-head">
+        <span>宿舍平面图 / 点击搜查</span>
+        <em>每次搜查 −50 秒 · 已翻过的地方可以排除</em>
+      </div>
+      <div class="plan-frame">
+        <svg id="plan" viewBox="0 0 640 520" role="group" aria-label="221 宿舍平面图">
+          <rect class="room" x="24" y="28" width="592" height="464"/>
+          <!-- window on left wall -->
+          <line class="win" x1="24" y1="150" x2="24" y2="320"/>
+          <line class="win2" x1="18" y1="150" x2="18" y2="320"/>
+          <text class="note" x="34" y="124">窗</text>
+          <!-- balcony door on top wall -->
+          <line class="doorline" x1="60" y1="28" x2="196" y2="28" stroke-width="3"/>
+          <text class="note" x="200" y="22">阳台门</text>
+          <!-- door on right wall -->
+          <line class="doorline" x1="616" y1="330" x2="616" y2="452"/>
+          <path class="arc" d="M616 452 A122 122 0 0 1 494 330"/>
+          <text class="note" x="596" y="320">门</text>
+
+          <g class="spot" data-id="balcony" tabindex="0" role="button" aria-label="搜查阳台门后">
+            <rect x="40" y="44" width="150" height="66"/>
+            <text x="115" y="78">阳台门后</text>
+          </g>
+          <g class="spot" data-id="bunk" tabindex="0" role="button" aria-label="搜查上铺被窝">
+            <rect x="40" y="132" width="180" height="168"/>
+            <text x="130" y="218">上铺被窝</text>
+          </g>
+          <g class="spot" data-id="drawer" tabindex="0" role="button" aria-label="搜查书桌抽屉">
+            <rect x="40" y="350" width="170" height="106"/>
+            <text x="125" y="404">书桌抽屉</text>
+          </g>
+          <g class="spot" data-id="books" tabindex="0" role="button" aria-label="搜查课本堆">
+            <rect x="246" y="318" width="118" height="74"/>
+            <text x="305" y="356">课本堆</text>
+          </g>
+          <g class="spot" data-id="closet" tabindex="0" role="button" aria-label="搜查衣柜顶层">
+            <rect x="438" y="44" width="162" height="118"/>
+            <text x="519" y="104">衣柜顶层</text>
+          </g>
+          <g class="spot" data-id="water" tabindex="0" role="button" aria-label="搜查饮水机后">
+            <rect x="458" y="192" width="112" height="108"/>
+            <text x="514" y="247">饮水机后</text>
+          </g>
+          <g class="spot" data-id="case" tabindex="0" role="button" aria-label="搜查行李箱">
+            <rect x="350" y="404" width="118" height="62"/>
+            <text x="409" y="436">行李箱</text>
+          </g>
+          <g class="spot" data-id="hook" tabindex="0" role="button" aria-label="搜查门后挂钩">
+            <rect x="486" y="322" width="106" height="126"/>
+            <text x="539" y="386">门后挂钩</text>
+          </g>
+
+          <text class="note" x="52" y="486">221 · 23:07</text>
+          <text class="note" x="500" y="486" text-anchor="end">6 人 · 1 盏灯</text>
+        </svg>
+        <div class="banner" id="banner"></div>
+      </div>
+      <div class="feed" id="feed"></div>
+    </div>
+
+    <aside class="side">
+      <div class="role-box">
+        <div class="sect">你的身份 <em id="roleIdTag">01</em></div>
+        <div class="rname"><h3 id="roleName">学霸</h3><em id="roleWho">林默</em></div>
+        <div class="rtask" id="roleTask"></div>
+        <div class="bar"><i id="taskFill"></i></div>
+        <div class="taskmeta"><span id="taskNum">0 / 3</span><span id="taskNote"></span></div>
+      </div>
+
+      <div class="acts">
+        <button class="act act-main" id="btnAct"><b>秘密动作</b><span></span></button>
+        <button class="act act-skill" id="btnSkill"><b>公开技能</b><span></span></button>
+        <button class="act" id="btnTalk"><b>搭话</b><span>问一句，套一点消息 · 30 秒</span></button>
+        <button class="act" id="btnObserve"><b>观察全场</b><span>看清谁在偷偷推进任务 · 20 秒</span></button>
+        <button class="act act-end" id="btnEnd"><b>结束本轮 →</b><span>进入指认环节</span></button>
+      </div>
+
+      <div class="clues">
+        <div class="sect">已获线索 <em id="clueCount">0 / 3</em></div>
+        <ul class="clue-list" id="clueList"></ul>
+        <div class="clue-foot" id="clueFoot"></div>
+      </div>
+
+      <div class="mates">
+        <div class="sect">室友 <em>5 人 · 各有秘密</em></div>
+        <ul class="mate-list" id="mateList"></ul>
+      </div>
+    </aside>
+  </main>
+</section>
+
+<!-- ================= END ================= -->
+<section class="screen end" id="scEnd">
+  <div class="end-inner">
+    <div class="end-kicker" id="endKicker">结局</div>
+    <h1 id="endTitle">灯亮了。</h1>
+    <p class="end-sub" id="endSub"></p>
+    <div class="end-facts">
+      <div><span>小夜灯</span><b id="factLight">上铺被窝</b></div>
+      <div><span>你的秘密任务</span><b id="factTask">2 / 3</b></div>
+      <div><span>本轮 MVP</span><b id="factMvp" class="amber">—</b></div>
+    </div>
+    <div class="sect" style="margin-bottom:0">完成度排行 <em>秘密任务</em></div>
+    <ul class="rank-list" id="rankList"></ul>
+    <p class="end-note" id="endNote"></p>
+    <div class="end-actions">
+      <button class="btn btn-primary" id="btnAgain">再来一夜 <span>→</span></button>
+      <button class="btn btn-ghost" id="btnOther">换个身份</button>
+      <button class="btn btn-ghost" id="btnRulesEnd">查看规则</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CODE MODE (solo) ================= -->
+<section class="screen" id="scCode">
+  <header class="topbar">
+    <div class="brand">221<span>宿舍</span></div>
+    <div class="hud">
+      <div class="hud-item"><span class="k">波次</span><b id="kWave">第 1 / 5 波</b></div>
+      <div class="hud-item"><span class="k">威胁</span><b id="kThreat">小</b></div>
+      <div class="hud-item"><span class="k">门</span><b id="kDoor">完好</b></div>
+      <div class="hud-item"><span class="k">剩余</span><b id="kTimer">0:45</b></div>
+    </div>
+    <button class="tbtn" id="kQuit">退出</button>
+  </header>
+
+  <div class="wrap kwrap">
+    <div class="kmain">
+      <div class="khead"><span id="kTitle">第 1 波</span><span id="kSub">碎片只发给你一个人</span></div>
+      <div class="kfrag" id="kFrag">等宿管发碎片…</div>
+      <div class="knotes" id="kNotes"></div>
+      <div id="kPlay">
+        <div class="kslots" id="kSlots"></div>
+        <div class="kpad" id="kPad"></div>
+        <div class="krow">
+          <button class="kbtn" id="kSkill">用技能<small>减伤 + 一条暗号情报</small></button>
+          <button class="kbtn on" id="kKeep">保留技能<small>这波只交暗号</small></button>
+          <button class="btn btn-primary" id="kSubmit">交答案</button>
+        </div>
+      </div>
+      <div class="kstate" id="kState"></div>
+      <div id="kReveal"></div>
+    </div>
+
+    <aside class="kside">
+      <div class="kh">本局进度</div>
+      <ul class="kwaves" id="kProg"></ul>
+      <div class="kh" style="margin-top:26px">我的成就</div>
+      <ul class="kach" id="kAch"></ul>
+    </aside>
+  </div>
+</section>
+
+<section class="screen end" id="scKEnd">
+  <div class="end-inner">
+    <div class="end-kicker">结局 / 暗号版</div>
+    <h1 id="keTitle">天亮了。</h1>
+    <p class="end-sub" id="keLead"></p>
+    <div class="end-facts">
+      <div><span>撑过</span><b id="keWaves">—</b></div>
+      <div><span>门</span><b id="keDoor">—</b></div>
+      <div><span>本局 MVP</span><b id="keMvp" class="amber">—</b></div>
+    </div>
+    <div class="sect" style="margin-bottom:0">五波记录 <em>答对人数</em></div>
+    <ul class="rank-list" id="keRank"></ul>
+    <p class="end-note" id="keNote"></p>
+    <div class="sect" style="margin-bottom:12px">成就</div>
+    <ul class="kach" id="keAch" style="margin-bottom:6px"></ul>
+    <div class="end-actions">
+      <button class="btn btn-primary" id="keAgain">再来一局 <span>→</span></button>
+      <button class="btn btn-ghost" id="keOther">换个身份</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MODAL ================= -->
+<div class="modal" id="modal">
+  <div class="modal-panel" id="modalPanel"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const rand = (a,b) => a + Math.random()*(b-a);
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { const r=a.slice(); for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];} return r; };
+
+/* ---------------- data ---------------- */
+const SPOTS = [
+  {id:'balcony', name:'阳台门后', h:0, w:1, s:1},
+  {id:'bunk',    name:'上铺被窝', h:1, w:1, s:1},
+  {id:'drawer',  name:'书桌抽屉', h:0, w:1, s:0},
+  {id:'books',   name:'课本堆',   h:1, w:1, s:0},
+  {id:'closet',  name:'衣柜顶层', h:1, w:0, s:0},
+  {id:'water',   name:'饮水机后', h:0, w:0, s:0},
+  {id:'case',    name:'行李箱',   h:0, w:0, s:1},
+  {id:'hook',    name:'门后挂钩', h:1, w:0, s:1}
+];
+const SPOT_MAP = {}; SPOTS.forEach(s => SPOT_MAP[s.id]=s);
+
+const CLUE_NAME = {h:'高度', w:'方位', s:'材质'};
+const CLUE_TEXT = {
+  h1:'那东西在高处——得踮脚，最好再踩个凳子。',
+  h0:'它离地面很近，得蹲下去，往阴影里摸。',
+  w1:'在靠窗的那半边。风从窗缝灌进来，凉的。',
+  w0:'在靠门的那半边。走廊的光从门缝底下漏进来。',
+  s1:'外面裹着软的，像是被谁随手拿衣服盖住了。',
+  s0:'敲上去是硬的，塑料或者木板。'
+};
+
+const ROLES = {
+  pink:{name:'粉毛', who:'阿桃', no:'01', diff:'●●○',
+    task:'让至少 2 人主动夸一句你的头发',
+    flavor:'越黑越显眼，越显眼越可疑。',
+    skill:'粉毛反光',
+    skillDesc:'用闪光灯照一下头发：看清一条线索，但所有人都知道你站在哪 · 20 秒',
+    act:'玩手机', actCost:20,
+    actDesc:'摸出手机看一眼 · 20 秒'},
+  nerd:{name:'学霸', who:'林默', no:'02', diff:'●●●',
+    task:'让至少 3 人承认「作业没写完」',
+    flavor:'你不是想抓人，你只是想知道有多少人跟你一样。',
+    skill:'重点划圈',
+    skillDesc:'在纸上划掉一个「绝对不是灯」的位置，全队可见 · 20 秒',
+    act:'逼问作业', actCost:25,
+    actDesc:'问一个人：作业写完了吗 · 25 秒'},
+  dragon:{name:'龙王', who:'大刘', no:'03', diff:'●●●',
+    task:'让至少 3 人跟着你应一句「龙王驾到」',
+    flavor:'宿舍没水，但龙王必须降雨。',
+    skill:'龙王降雨',
+    skillDesc:'喊一句口令指定动作（喝水/拍桌/抱头），没照做的人下一轮不能投票 · 20 秒',
+    act:'造气氛', actCost:20,
+    actDesc:'喊两嗓子把场面撑住 · 20 秒'},
+  flo:{name:'弗洛洛', who:'阿远', no:'04', diff:'●●○',
+    task:'用悄悄话把「菠萝」传给一个人',
+    flavor:'越神秘越像幕后黑手。',
+    skill:'悄悄话结界',
+    skillDesc:'和任意一人交换一条秘密任务提示，第三人不许偷听 · 20 秒',
+    act:'传悄悄话', actCost:25,
+    actDesc:'凑到人耳边说一句暗号 · 25 秒'},
+  gz:{name:'贵州', who:'小胖', no:'05', diff:'●●○',
+    task:'让至少 2 人跟着你学一句家乡话',
+    flavor:'全宿舍都在猜：到底是不是这个意思。',
+    skill:'方言加密',
+    skillDesc:'用一句家乡话发布指令，听懂的人可以跟着学 · 20 秒',
+    act:'说点家常', actCost:20,
+    actDesc:'用家乡话嘀咕两句 · 20 秒'},
+  pig:{name:'猪', who:'阿哲', no:'06', diff:'●●●',
+    task:'找到外卖藏匿点，或让 3 个人说「饿了」',
+    flavor:'找灯是顺便，找外卖是主线。',
+    skill:'吃货嗅觉',
+    skillDesc:'问一句「灯离外卖近不近」，答案是远还是近 · 20 秒',
+    act:'找外卖', actCost:35,
+    actDesc:'翻一个可疑的地方，找那袋凉掉的饭 · 35 秒'}
+};
+
+const MATES = [
+  {role:'pink',   name:'阿桃'},
+  {role:'nerd',   name:'林默'},
+  {role:'dragon', name:'大刘'},
+  {role:'flo',    name:'阿远'},
+  {role:'gz',     name:'小胖'},
+  {role:'pig',    name:'阿哲'}
+];
+
+const COST = {search:50, talk:30, observe:20, skill:20};
+const FOOD_SPOTS = ['drawer','case','books'];
+
+/* ---------------- state ---------------- */
+let S = null;
+let pendingRole = null;
+let gameMode = 'search';
+let busy = false;
+let toastTimer = null;
+
+/* ---------------- helpers ---------------- */
+function setScreen(id){
+  $$('.screen').forEach(el => el.classList.remove('on'));
+  (typeof id === 'string' ? $(id) : id).classList.add('on');
+  window.scrollTo({top:0,behavior:'instant'});
+}
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('on'),1900);
+}
+function mmss(sec){
+  sec = Math.max(0, Math.round(sec));
+  return String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0');
+}
+function candidates(){
+  return SPOTS.filter(s => {
+    if(S.excluded && S.excluded.has(s.id)) return false;
+    for(const k in S.clues){ if(s[k] !== S.clues[k]) return false; }
+    return true;
+  });
+}
+function clueCount(){ return Object.keys(S.clues).length; }
+
+/* ---------------- role list ---------------- */
+function renderRoleList(){
+  $('#roleList').innerHTML = Object.keys(ROLES).map(k=>{
+    const r = ROLES[k];
+    return `<li class="role-row" data-role="${k}" tabindex="0" role="button">
+      <span class="num">${r.no}</span>
+      <div><h3>${r.name}<em>${r.who}</em></h3><p>${gameMode === 'code' ? '暗号版：五波查寝，答对 4 人以上才算破解 —— ' + r.flavor : r.task + ' —— ' + r.flavor}</p>
+        <p class="sk">技能【${r.skill}】${gameMode === 'code' && typeof KSKILL !== 'undefined' ? KSKILL[k].desc : r.skillDesc}</p></div>
+      <span class="diff">${r.diff}</span>
+    </li>`;
+  }).join('');
+  $$('#roleList .role-row').forEach(row=>{
+    const choose = ()=>{
+      $$('#roleList .role-row').forEach(r=>r.classList.remove('on'));
+      row.classList.add('on'); pendingRole = row.dataset.role;
+      $('#btnGo').disabled = false;
+    };
+    row.addEventListener('click', choose);
+    row.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();choose();} });
+  });
+}
+
+/* ---------------- game start ---------------- */
+let gen = 0;
+function later(ms, fn){
+  const g = gen;
+  return setTimeout(()=>{ if(g === gen) fn(); }, ms);
+}
+function newGame(roleId){
+  gen++;
+  const roleDef = ROLES[roleId];
+  const mates = shuffle(MATES.filter(m=>m.role!==roleId)).map(m=>{
+    const r = ROLES[m.role];
+    return {
+      role:m.role, name:m.name, progress:0,
+      eff: rand(0.85,1.25),
+      willAdmit: Math.random() < 0.62,
+      admitted:false, willing:false, trusted:false, talked:false,
+      watching: Math.random() < 0.38,
+      stalled:false
+    };
+  });
+  // 学霸局：保证 4 个室友最终会承认，够凑 3 人
+  if(roleId==='nerd'){
+    const idx = shuffle([0,1,2,3,4]).slice(0,4);
+    mates.forEach((m,i)=> m.willAdmit = idx.includes(i));
+  }
+  // 口令类任务：保证一定凑得够人
+  mates.forEach(m=>{ m.curious = Math.random() < 0.72; });
+  S = {
+    role:roleId, roleDef, round:1, time:180, battery:10,
+    light: pick(SPOTS).id,
+    clues:{}, searched:new Set(), found:false,
+    mates,
+    admits:0, praise:0, followed:0, learned:0, hungry:0,
+    muted:false, skillUsed:false, excluded:new Set(),
+    call:null, pubs:new Set(),
+    food: pick(FOOD_SPOTS), foodTried:new Set(), foodDone:false, foodHint:null,
+    whisperDone:false, owlDone:false, owlRan:false,
+    observed:false, over:false, survived:false, roundsDone:0,
+    log:[], busy:false, finalPick:null
+  };
+  busy = false;
+  $('#feed').innerHTML = '';
+  $('#scGame').classList.remove('dead');
+  document.body.classList.remove('lit');
+  renderAll();
+  setScreen('#scGame');
+  setTimeout(()=>{ showBanner('第 1 轮 · 熄灯'); logLine('灯灭了。楼道里传来别的宿舍的骂声，然后是脚步声。','sys'); },350);
+  setTimeout(()=>{ logLine('先动起来：点地图上的一处搜（50 秒），或找室友搭话（30 秒）套线索。','sys'); },1400);
+}
+
+function showBanner(text){
+  const b = $('#banner');
+  b.innerHTML = `<b>${text}</b>`;
+  b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+}
+
+/* ---------------- logging ---------------- */
+function logLine(text, type){
+  S.log.push({text, type:type||'sys', round:S.round});
+  renderFeed();
+}
+function renderFeed(){
+  const el = $('#feed');
+  const lines = S.log.slice(-4).reverse();
+  el.innerHTML = lines.map(l=>{
+    const tag = l.type==='clue' ? '线索' : l.type==='bad' ? '麻烦' : l.type==='good' ? '完成' : l.type==='win' ? '灯' : l.type==='mate' ? '室友' : '你';
+    return `<div class="feed-line ${l.type}"><span class="fm">${l.round}·${tag}</span><span>${l.text}</span></div>`;
+  }).join('');
+}
+
+/* ---------------- render ---------------- */
+function renderAll(){ renderHud(); renderRole(); renderActs(); renderClues(); renderMates(); renderPlan(); }
+
+function renderHud(){
+  $('#hudRound').textContent = `第 ${S.round} / 3 轮`;
+  $('#hudTime').textContent = mmss(S.time);
+  const pct = Math.ceil(S.battery);
+  $('#hudBat').textContent = pct + '%';
+  $('#batFill').style.width = Math.max(2,pct) + '%';
+  $('#batFill').style.opacity = pct <= 4 ? .5 : 1;
+}
+function renderRole(){
+  const r = S.roleDef;
+  $('#roleIdTag').textContent = r.no;
+  $('#roleName').textContent = r.name;
+  $('#roleWho').textContent = r.who;
+  const t = taskInfo();
+  $('#roleTask').innerHTML = `秘密任务：<b>${t.text}</b>`;
+  $('#taskFill').style.width = t.pct + '%';
+  $('#taskNum').textContent = t.label;
+  $('#taskNote').textContent = t.note;
+}
+function renderActs(){
+  const r = S.roleDef;
+  const b = $('#btnAct');
+  b.querySelector('b').textContent = r.act;
+  b.querySelector('span').textContent = r.actDesc;
+  const costly = [[b, r.actCost], [$('#btnTalk'), COST.talk], [$('#btnObserve'), COST.observe]];
+  costly.forEach(([el,c])=>{ el.disabled = S.over || S.ending || S.time < c; });
+  $('#btnAct').disabled = S.over || S.ending || S.time < r.actCost || isActDone();
+  const sk = $('#btnSkill');
+  if(sk){
+    sk.querySelector('b').textContent = '【' + r.skill + '】';
+    sk.querySelector('span').textContent = S.skillUsed ? '这局已经用过了' : r.skillDesc;
+    sk.disabled = S.over || S.ending || S.skillUsed || S.time < COST.skill;
+  }
+  $('#btnEnd').disabled = S.over || S.ending;
+  $('#btnEnd').classList.toggle('pulse', !S.over && !S.ending && S.time < 25);
+}
+function renderClues(){
+  const keys = Object.keys(S.clues);
+  $('#clueCount').textContent = `${keys.length} / 3`;
+  const names = {h:'高度', w:'方位', s:'材质'};
+  $('#clueList').innerHTML = keys.length
+    ? keys.map(k=>`<li><i>${names[k]}</i><span>${CLUE_TEXT[k+S.clues[k]]}</span></li>`).join('')
+    : `<li class="empty">还没有线索。搜查空的地方，或指认一个室友。</li>`;
+  const c = candidates();
+  $('#clueFoot').innerHTML = keys.length
+    ? `按线索排除后，还剩 <b>${c.length}</b> 处可能的位置。`
+    : `一共 8 个可能的位置。材质只能靠亲手翻找得知。`;
+}
+function renderMates(){
+  $('#mateList').innerHTML = S.mates.map(m=>{
+    const roleName = ROLES[m.role].name;
+    const p = S.observed ? Math.round(m.progress)+'%' : '??';
+    return `<li class="mate ${m.talked?'talked':''}">
+      <span class="mn">${m.name}</span>
+      <span class="mr">${roleName}</span>
+      <span class="mp ${S.observed?'hi':''}">${p}</span>
+    </li>`;
+  }).join('');
+}
+function renderPlan(){
+  $$('#plan .spot').forEach(g=>{
+    const id = g.dataset.id;
+    g.classList.toggle('done', S.searched.has(id));
+  });
+}
+
+/* ---------------- task model ---------------- */
+function taskInfo(){
+  switch(S.role){
+    case 'pink':
+      return {text:'让至少 2 人主动夸一句你的头发', pct:Math.min(100,S.praise/2*100),
+        label:`${S.praise} / 2 人`, note: S.praise>=2?'完成了':'放技能等人接话'};
+    case 'nerd':
+      return {text:'让至少 3 人承认作业没写完', pct:Math.min(100,S.admits/3*100),
+        label:`${S.admits} / 3 人`, note: S.admits>=3?'已完成':'继续问'};
+    case 'dragon':
+      return {text:'让至少 3 人应你一句「龙王驾到」', pct:Math.min(100,S.followed/3*100),
+        label:`${S.followed} / 3 人`, note: S.followed>=3?'已完成':'降雨时盯紧'};
+    case 'flo':
+      return {text:'用悄悄话把「菠萝」传给一个人', pct:S.whisperDone?100:0,
+        label:S.whisperDone?'已传到':'还没开口', note:S.whisperDone?'松了一口气':'先跟人熟络'};
+    case 'gz':
+      return {text:'让至少 2 人跟着你学一句家乡话', pct:Math.min(100,S.learned/2*100),
+        label:`${S.learned} / 2 人`, note:S.learned>=2?'已完成':'方言得多说两遍'};
+    case 'pig':
+      return {text:'找到外卖，或让 3 个人说「饿了」', pct:S.foodDone?100:Math.min(100,S.hungry/3*100),
+        label:S.foodDone?'外卖找到了':`饿 ${S.hungry} / 3`,
+        note:S.foodDone?'可以吃了':'翻有盖子的地方'};
+  }
+  return {text:'',pct:0,label:'',note:''};
+}
+function isActDone(){
+  switch(S.role){
+    case 'pink': return S.praise>=2;
+    case 'nerd': return S.admits>=3;
+    case 'dragon': return S.followed>=3;
+    case 'flo': return S.whisperDone;
+    case 'gz': return S.learned>=2;
+    case 'pig': return S.foodDone || S.hungry>=3;
+  }
+  return false;
+}
+function taskPct(){ return Math.round(taskInfo().pct); }
+
+/* ---------------- economy ---------------- */
+function canPay(cost){ return !S.over && !S.ending && !busy && S.time >= cost; }
+function spend(cost){
+  S.time = Math.max(0, S.time - cost);
+  S.battery = Math.max(2, S.battery - 0.55);
+  renderHud(); renderActs();
+}
+
+/* ---------------- clue reveal ---------------- */
+function revealClue(source){
+  let keys = ['h','w','s'].filter(k => !(k in S.clues));
+  // 指认只能换来「高度 / 方位」；材质只有亲手翻找才知道
+  if(source === 'vote'){
+    const soft = keys.filter(k => k !== 's');
+    if(soft.length) keys = soft;
+  }
+  if(!keys.length) return false;
+  const k = pick(keys);
+  const light = SPOT_MAP[S.light];
+  S.clues[k] = light[k];
+  logLine(`${CLUE_NAME[k]}线索：${CLUE_TEXT[k+light[k]]}`, 'clue');
+  const c = candidates();
+  if(c.length === 1) logLine('拼起来了——只剩一个地方。', 'good');
+  renderClues();
+  return true;
+}
+
+/* ---------------- actions ---------------- */
+function handleSearch(id){
+  if(S.over || busy) return;
+  if(S.found) return;
+  if(S.searched.has(id)){ toast('这地方已经翻过了'); return; }
+  if(S.time < COST.search){ toast('时间不够了，先结束本轮'); return; }
+  spend(COST.search);
+  S.searched.add(id);
+  const spot = SPOT_MAP[id];
+  const g = $(`#plan .spot[data-id="${id}"]`);
+  if(g){
+    g.classList.add('done');
+    const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    const r = g.querySelector('rect');
+    ring.setAttribute('cx', +r.getAttribute('x') + +r.getAttribute('width')/2);
+    ring.setAttribute('cy', +r.getAttribute('y') + +r.getAttribute('height')/2);
+    ring.setAttribute('r', 14);
+    ring.setAttribute('fill','none');
+    ring.setAttribute('stroke','rgba(242,183,74,.7)');
+    ring.setAttribute('stroke-width','2');
+    ring.classList.add('scan');
+    $('#plan').appendChild(ring);
+    setTimeout(()=>ring.remove(), 700);
+  }
+  if(id === S.light){
+    S.found = true;
+    S.ending = true;
+    g.classList.add('lit');
+    document.body.classList.add('lit');
+    logLine(`你摸到了${spot.name}。一小块温热的塑料，按下去，亮了。`, 'win');
+    renderHud(); renderActs();
+    later(1500, ()=>finish(true));
+  } else {
+    logLine(`你把${spot.name}翻了一遍，只摸到一手灰。`, 'you');
+    revealClue('search');
+    renderPlan(); renderClues(); renderActs();
+  }
+}
+
+function openTalk(){
+  if(!canPay(COST.talk)) return;
+  busy = true;
+  openModal({
+    kicker:'行动 / 搭话',
+    title:'找谁说话？',
+    sub:'黑暗里，声音比脸更可信。点一个人，凑过去问一句。',
+    body: `<ul class="pick-list">${S.mates.map((m,i)=>{
+      return `<li><button class="pick" data-i="${i}">
+        <b>${m.name}</b><em>${ROLES[m.role].name}</em>
+        <span class="pe">${m.talked?'已聊过':'没聊过'}</span>
+      </button></li>`;
+    }).join('')}</ul>`,
+    onClose:()=>{ busy = false; }
+  });
+  $$('#modalPanel .pick').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const m = S.mates[+btn.dataset.i];
+      closeModal();
+      busy = false;
+      talkTo(m);
+    });
+  });
+}
+
+function talkTo(m){
+  if(!canPay(COST.talk)) return;
+  spend(COST.talk);
+  m.talked = true;
+  let line = '';
+  switch(S.role){
+    case 'nerd':
+      if(m.admitted){
+        line = `${m.name}：「我真写完了，你别问了。」`;
+      } else if(m.willAdmit){
+        m.admitted = true; S.admits++;
+        line = `${m.name}愣了两秒：「……其实我选择题只写了一半。」（承认 ${S.admits}/3）`;
+      } else {
+        line = `${m.name}：「写完了。」他盯着你，没有眨眼。`;
+      }
+      break;
+    case 'flo':
+      if(!m.trusted){ m.trusted = true; line = `你鼓起勇气跟${m.name}搭了两句话。他点了点头——算是熟了。`; }
+      else line = `${m.name}冲你笑了一下，没说话。`;
+      break;
+    case 'pig':
+      if(!S.foodHint){
+        S.foodHint = Math.random() < 0.5 ? 'left' : 'right';
+        const side = S.foodHint === 'left' ? '靠窗那半边' : '靠门那半边';
+        line = `${m.name}吸了吸鼻子：「你闻到没？麻辣烫味，好像从${side}飘过来的。」`;
+      } else {
+        line = `${m.name}：「别问了，我也饿。」`;
+      }
+      break;
+    default:
+      m.curious = true;
+      line = `${m.name}：「灯到底在哪儿啊。」说完自己也笑了。聊过的人更愿意接你的口令。`;
+  }
+  logLine(line, 'mate');
+  renderAll();
+  if(S.role==='nerd' && S.admits>=3) logLine('三个人都承认了。你心里居然有点安慰。', 'good');
+}
+
+/* 口令：喊完之后看谁接得最快 */
+function runCall(kind, label, reactText, need, opts){
+  opts = opts || {};
+  const pool = S.mates.filter(m => !m.reactedThisRound);
+  const hits = pool.filter(m => m.curious || Math.random() < 0.45);
+  const take = Math.min(need, hits.length);
+  const reacted = hits.slice(0, take);
+  reacted.forEach(m => { m.reactedThisRound = true; });
+  const CAP = { praise: 2, followed: 3, learned: 2, hungry: 3 };
+  S[kind] = Math.min(CAP[kind] || 3, (S[kind] || 0) + reacted.length);
+  const rows = S.mates.map(m => {
+    const yes = reacted.includes(m);
+    return `<li class="owl-row ${yes ? '' : 'sleep'}">
+      <span class="nm">${m.name}</span>
+      <span class="on">${ROLES[m.role].name}</span>
+      <span class="st">${yes ? esc(reactText) : '没吭声'}</span></li>`;
+  }).join('');
+  const short = reacted.length < need;
+  openModal({
+    kicker: '公开技能 / 口令',
+    title: label,
+    sub: short
+      ? `只有 ${reacted.length} 个人接住了这句。想要 ${need} 个，得多聊两句再说。`
+      : `${reacted.length} 个人接了——${reactText}。`,
+    body: `<ul class="owl-stage">${rows}</ul>`,
+    closable: true,
+    onClose: ()=>{
+      busy = false;
+      if(opts.mute && short) logLine('没接令的人，下一轮会安静一点。', 'sys');
+      logLine(`【${label}】${reacted.length} 人应了。`, 'good');
+      renderAll();
+    }
+  });
+}
+
+function doSkill(){
+  if(!canPay(COST.skill) || S.skillUsed) return;
+  const r = S.roleDef;
+  switch(S.role){
+    case 'pink': {
+      spend(COST.skill);
+      S.skillUsed = true;
+      const got = revealClue('search');
+      const at = pick(SPOTS).name;
+      logLine(`你把头发撩到手机闪光灯前——整间宿舍亮了一下。所有人都看清你站在${at}附近。`, 'bad');
+      if(!got) logLine('反光只够看清一点轮廓，别的都还是黑的。', 'sys');
+      runCall('praise', r.skill, '这头发真亮', 2);
+      renderAll();
+      return;
+    }
+    case 'nerd': {
+      spend(COST.skill);
+      S.skillUsed = true;
+      const cands = SPOTS.filter(sp => sp.id !== S.light && !S.excluded.has(sp.id));
+      if(!cands.length){ logLine('能划的都划掉了。', 'sys'); renderAll(); return; }
+      const sp = pick(cands);
+      S.excluded.add(sp.id);
+      logLine(`你在纸上划掉一个位置：${sp.name} 绝对不是灯。`, 'clue');
+      renderAll();
+      return;
+    }
+    case 'dragon': {
+      busy = true;
+      openModal({
+        kicker:'公开技能 / 龙王降雨',
+        title:'让他们做什么？',
+        sub:'没照做的人，下一轮不能投票。',
+        body:`<ul class="pick-list">
+          <li><button class="pick" data-a="喝水"><b>喝水</b><em>最温和</em></button></li>
+          <li><button class="pick" data-a="拍桌"><b>拍桌</b><em>最响</em></button></li>
+          <li><button class="pick" data-a="抱头"><b>抱头</b><em>最丢脸</em></button></li>
+        </ul>`,
+        onClose:()=>{ busy = false; }
+      });
+      $$('#modalPanel .pick').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          closeModal(); busy = false;
+          spend(COST.skill); S.skillUsed = true;
+          logLine(`你一站：「龙王降雨！所有人${btn.dataset.a}！」`, 'you');
+          runCall('followed', r.skill, '龙王驾到', 3, { mute: true });
+          renderAll();
+        });
+      });
+      return;
+    }
+    case 'flo': {
+      busy = true;
+      openModal({
+        kicker:'公开技能 / 悄悄话结界',
+        title:'和谁交换一条任务提示？',
+        sub:'两个人贴着耳朵说，第三个人不许偷听。',
+        body:`<ul class="pick-list">${S.mates.map((m,i)=>
+          `<li><button class="pick" data-i="${i}"><b>${m.name}</b><em>${ROLES[m.role].name}</em>
+          <span class="pe">${m.trusted?'还算熟':'没说过话'}</span></button></li>`).join('')}</ul>`,
+        onClose:()=>{ busy = false; }
+      });
+      $$('#modalPanel .pick').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const m = S.mates[+btn.dataset.i];
+          closeModal(); busy = false;
+          spend(COST.skill); S.skillUsed = true;
+          logLine(`你贴着${m.name}的耳朵交换了提示：他的秘密任务是「${ROLES[m.role].task}」。但他也知道，你为什么一直盯着角落。`, 'you');
+          m.curious = true;
+          renderAll();
+        });
+      });
+      return;
+    }
+    case 'gz': {
+      spend(COST.skill);
+      S.skillUsed = true;
+      const line = pick(DIALECT);
+      logLine(`你突然用家乡话喊了一句：「${line}」`, 'you');
+      runCall('learned', r.skill, '学一句方言', 2);
+      renderAll();
+      return;
+    }
+    case 'pig': {
+      spend(COST.skill);
+      S.skillUsed = true;
+      const a = SPOT_MAP[S.light], b = SPOT_MAP[S.food];
+      const d = (a.h!==b.h?1:0) + (a.w!==b.w?1:0) + (a.s!==b.s?1:0);
+      logLine(`你抽了抽鼻子：灯离外卖${d<=1?'不':'很'}远。`, 'clue');
+      runCall('hungry', r.skill, '饿了', 3);
+      renderAll();
+      return;
+    }
+  }
+}
+
+const DIALECT = ['搞哪样嘛', '安逸得很', '莫慌莫慌', '幺不到台'];
+
+function esc(t){
+  return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function openWhisper(){
+  if(!canPay(S.roleDef.actCost)) return;
+  busy = true;
+  openModal({
+    kicker:'秘密动作 / 悄悄话',
+    title:'凑到谁的耳边？',
+    sub:'暗号是「菠萝」。说清楚，但别让第三个人听见。',
+    body:`<ul class="pick-list">${S.mates.map((m,i)=>
+      `<li><button class="pick" data-i="${i}"><b>${m.name}</b><em>${ROLES[m.role].name}</em>
+      <span class="pe">${m.trusted?'还算熟':'没说过话'}</span></button></li>`).join('')}</ul>`,
+    onClose:()=>{ busy=false; }
+  });
+  $$('#modalPanel .pick').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const m = S.mates[+btn.dataset.i];
+      closeModal(); busy=false;
+      spend(S.roleDef.actCost);
+      if(!m.trusted){
+        logLine(`你凑到${m.name}耳边，张了张嘴，声音卡在喉咙里。`, 'bad');
+      } else if(Math.random() < 0.3){
+        logLine(`「菠萝」两个字刚出口，第三个人抬起了头。`, 'bad');
+      } else {
+        S.whisperDone = true;
+        logLine(`你把「菠萝」两个字吹进${m.name}耳朵里。他愣了一下，点点头。`, 'good');
+      }
+      renderAll();
+    });
+  });
+}
+
+function openFood(){
+  if(!canPay(S.roleDef.actCost) || S.foodDone) return;
+  busy = true;
+  const cands = FOOD_SPOTS.map(id=>SPOT_MAP[id]);
+  openModal({
+    kicker:'秘密动作 / 找外卖',
+    title:'去哪儿翻？',
+    sub:'麻辣烫不会自己长腿跑掉，但可能会被塞进奇怪的地方。',
+    body:`<ul class="pick-list">${cands.map(s=>{
+      const tried = S.foodTried.has(s.id);
+      return `<li><button class="pick" data-id="${s.id}" ${tried?'disabled':''}>
+        <b>${s.name}</b><em>${s.h===1?'高处':'低处'} · ${s.w===1?'窗侧':'门侧'}</em>
+        <span class="pe">${tried?'翻过了':'搜'}</span></button></li>`;
+    }).join('')}</ul>`,
+    onClose:()=>{ busy=false; }
+  });
+  $$('#modalPanel .pick').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(btn.disabled) return;
+      const id = btn.dataset.id;
+      closeModal(); busy=false;
+      spend(S.roleDef.actCost);
+      if(id === S.food){
+        S.foodDone = true;
+        logLine('一个还温着的塑料袋。麻辣烫。你差点哭出来。', 'good');
+      } else {
+        S.foodTried.add(id);
+        logLine(`你翻了${SPOT_MAP[id].name}，只有一包过期的纸巾。`, 'bad');
+      }
+      renderAll();
+    });
+  });
+}
+
+function actMain(){
+  const r = S.roleDef;
+  if(!canPay(r.actCost) || isActDone()) return;
+  if(S.role === 'flo'){ openWhisper(); return; }
+  if(S.role === 'pig'){ openFood(); return; }
+  spend(r.actCost);
+  if(S.role === 'pink'){
+    if(Math.random() < 0.34){ S.praise++; logLine('「你这头发真亮啊，黑灯里都看得见。」有人小声说。（被夸 ' + S.praise + '/2）', 'good'); }
+    else logLine('你低头刷了两下手机，屏幕光在脸上晃。没人说话。', 'you');
+  } else if(S.role === 'dragon'){
+    if(Math.random() < 0.36){ S.followed++; logLine('你一句「龙王驾到」，居然有人跟着喊了一句「龙王驾到」（' + S.followed + '/3）。', 'good'); }
+    else logLine('你清了清嗓子，黑暗里没人接。', 'you');
+  } else if(S.role === 'gz'){
+    if(Math.random() < 0.34){ S.learned++; logLine('「是这个意思吧？」有人学了一句，还学得挺像。（学会 ' + S.learned + '/2）', 'good'); }
+    else logLine('你用家乡话嘀咕了两句，大家嗯嗯啊啊地应着，好像没听懂。', 'you');
+  } else if(S.role === 'nerd'){
+    if(Math.random() < 0.5 && S.admits < 3){ S.admits++; logLine('你把作业往桌上一推：「对一下最后一题？」有人下意识说了句「我还没写完」。（承认 ' + S.admits + '/3）', 'good'); }
+    else logLine('你把作业摊开，念了两道题。没人接。', 'you');
+  }
+  renderAll();
+}
+
+function doObserve(){
+  if(!canPay(COST.observe)) return;
+  spend(COST.observe);
+  S.observed = true;
+  logLine('你借着窗外的路灯光扫了一圈：谁在装睡，谁在偷偷动。', 'you');
+  renderAll();
+}
+
+/* ---------------- round end / vote ---------------- */
+function openVote(){
+  if(S.over || busy) return;
+  busy = true;
+  const flavors = ['手一直藏在被子里','被子鼓得不太对','手机屏幕光从枕头上漏出来','刚刚咳了一声','在假装打呼'];
+  openModal({
+    kicker:`第 ${S.round} 轮 / 指认`,
+    title:'谁最可疑？',
+    sub:'每轮结束，所有人指认一个最可疑的人。被指认者要公开一条线索——但他这一轮也别想再推进自己的任务。',
+    body:`<ul class="pick-list">${S.mates.map((m,i)=>`
+      <li><button class="pick" data-i="${i}">
+        <b>${m.name}</b><em>${ROLES[m.role].name}</em>
+        <span class="pe">${S.observed ? Math.round(m.progress)+'%' : pick(flavors)}</span>
+      </button></li>`).join('')}</ul>`,
+    onClose:()=>{ busy=false; }
+  });
+  $$('#modalPanel .pick').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const m = S.mates[+btn.dataset.i];
+      closeModal(); busy=false;
+      resolveVote(m);
+    });
+  });
+}
+
+function resolveVote(mate){
+  busy = true;
+  mate.stalled = true;
+  logLine(`你指认了${mate.name}。`, 'you');
+  if(clueCount() < 3){
+    logLine(`${mate.name}叹了口气：「行吧……我好像看见过点什么。」`, 'mate');
+    revealClue('vote');
+  } else {
+    logLine(`${mate.name}：「我知道的都说了，剩下的靠你自己。」`, 'mate');
+  }
+
+  // 室友也会指认
+  const accuser = pick(S.mates);
+  if(Math.random() < 0.4){
+    logLine(`${accuser.name}：「我指认${S.roleDef.who}。」——你只能跟着公开一条线索。`, 'bad');
+    if(clueCount() < 3) revealClue('vote');
+    if(S.call){
+      S.call = null;
+      logLine('你正喊到一半，被这一下打断了。', 'bad');
+    }
+  } else {
+    const others = S.mates.filter(x => x !== accuser);
+    const target = pick(others.length ? others : S.mates);
+    logLine(`${accuser.name}指认了${target.name}。两个人当场吵起来，没人再注意你。`, 'mate');
+  }
+
+  // 室友推进自己的任务
+  const gained = [];
+  S.mates.forEach(mm=>{
+    if(mm.stalled){ mm.stalled = false; return; }
+    const add = mm.eff * rand(18, 32);
+    mm.progress = Math.min(100, mm.progress + add);
+    gained.push(`${mm.name} +${Math.round(add)}`);
+  });
+  S.roundsDone = S.round;
+  renderAll();
+
+  later(600, ()=>{
+    busy = false;
+    if(S.round < 3){
+      S.round++;
+      S.time = 180;
+      S.observed = false;
+      S.mates.forEach(m => { m.reactedThisRound = false; });
+      renderAll();
+      showBanner(`第 ${S.round} 轮`);
+      logLine(`第 ${S.round} 轮。走廊上的脚步声又近了。`, 'sys');
+    } else {
+      afterThird();
+    }
+  }, 600);
+}
+
+/* ---------------- third round / final ---------------- */
+function afterThird(){
+  if(!S.owlDone && !S.owlRan){
+    S.owlRan = true;
+    owlMinigame(()=>finalPhase());
+  } else {
+    finalPhase();
+  }
+}
+
+function finalPhase(){
+  if(S.found){ finish(true); return; }
+  let cands = candidates().filter(s => !S.searched.has(s.id));
+  if(!cands.length) cands = SPOTS.filter(s => !S.searched.has(s.id));
+  busy = true;
+  openModal({
+    kicker:'第 3 轮 / 最终指认',
+    title:'灯在哪儿？',
+    sub:'宿管的手电已经照到门缝了。你只有一次机会——把线索对一遍，指一个地方。',
+    body:`<ul class="pick-list">${cands.map(s=>`
+      <li><button class="pick" data-id="${s.id}"><b>${s.name}</b>
+      <em>${s.h===1?'高处':'低处'} · ${s.w===1?'窗侧':'门侧'} · ${s.s===1?'软的':'硬的'}</em>
+      <span class="pe">指这里</span></button></li>`).join('')}</ul>`,
+    closable:false
+  });
+  $$('#modalPanel .pick').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.id;
+      closeModal();
+      S.finalPick = id;
+      finish(id === S.light);
+    });
+  });
+}
+
+/* ---------------- owl minigame ---------------- */
+function owlMinigame(done){
+  busy = true;
+  let allClosed = false, finished = false, clickable = true;
+  let windowTimer = null, deadlineTimer = null;
+  const order = shuffle(S.mates);
+  const panel = $('#modalPanel');
+
+  openModal({
+    kicker:'第 3 轮 / 熄灯号',
+    title:'最后一个闭眼的人',
+    sub:'等所有人都闭上眼，你再闭上。早一秒，你就是那个被记名字的人。',
+    body:`<div class="owl-stage">${S.mates.map(m=>`
+      <div class="owl-row" data-name="${m.name}">
+        <span class="on">—</span><span class="nm">${m.name}</span>
+        <span class="st">还睁着眼</span>
+      </div>`).join('')}</div>
+      <button class="owl-btn" id="owlBtn">闭眼装睡</button>
+      <div class="owl-bar"><i id="owlBar"></i></div>`,
+    closable:false
+  });
+
+  const btn = $('#owlBtn');
+  const markSleep = (m)=>{
+    const row = panel.querySelector(`.owl-row[data-name="${m.name}"]`);
+    if(!row) return;
+    row.classList.add('sleep');
+    row.querySelector('.st').textContent = '已闭眼';
+    row.querySelector('.on').textContent = '—';
+  };
+
+  order.forEach((m, i)=>{
+    later(1100 + i*1250 + rand(0, 420), ()=>{
+      if(finished) return;
+      markSleep(m);
+      if(i === order.length - 1){
+        allClosed = true;
+        btn.disabled = false;
+        btn.textContent = '闭眼装睡';
+        btn.classList.add('ready');
+        const windowMs = (7 + S.owlBonus) * 1000;
+        const bar = $('#owlBar');
+        bar.style.transition = `width ${windowMs}ms linear`;
+        requestAnimationFrame(()=>{ bar.style.width = '100%'; });
+        deadlineTimer = later(windowMs, ()=>{
+          if(finished) return;
+          finished = true; clickable = false;
+          S.owlDone = false;
+          logLine('你犹豫了半秒。宿管的手电扫了进来——「还没睡？」', 'bad');
+          later(1100, ()=>{ closeModal(); busy=false; done(); });
+        });
+      }
+    });
+  });
+
+  btn.addEventListener('click', ()=>{
+    if(finished || !clickable) return;
+    if(!allClosed){
+      finished = true;
+      logLine('你是第一个闭眼的人。黑暗里，五双眼睛齐刷刷看向你。', 'bad');
+      later(1100, ()=>{ closeModal(); busy=false; done(); });
+      return;
+    }
+    finished = true;
+    clearTimeout(deadlineTimer);
+    S.owlDone = true;
+    logLine('所有人都睡了。你最后一个闭上眼——在宿管推门之前。', 'good');
+    later(1100, ()=>{ closeModal(); busy=false; done(); });
+  });
+}
+
+/* ---------------- finish ---------------- */
+function finish(found){
+  if(S.over) return;
+  if(found && !S.owlDone && !S.owlRan){
+    S.owlRan = true;
+    logLine('灯亮着。现在，看谁最后一个闭眼。', 'win');
+    owlMinigame(()=> finish(true));
+    return;
+  }
+  S.over = true; busy = false;
+  S.survived = !!found;
+  if(S.roundsDone < 3){
+    for(let r = S.roundsDone; r < 3; r++){
+      S.mates.forEach(m=>{
+        m.progress = Math.min(100, m.progress + m.eff * rand(16, 30));
+      });
+    }
+  }
+  renderEnd();
+  document.body.classList.toggle('lit', S.survived);
+  setScreen('#scEnd');
+}
+
+function renderEnd(){
+  const survive = S.survived;
+  const el = $('#scEnd');
+  el.classList.toggle('survive', survive);
+  el.classList.toggle('dead', !survive);
+  const lightName = SPOT_MAP[S.light].name;
+
+  $('#endKicker').textContent = survive ? '结局 / 存活' : '结局 / 社死';
+  $('#endTitle').textContent = survive ? '灯亮了。' : '一片黑。';
+  $('#endSub').textContent = survive
+    ? '宿管的手电在门缝停了半秒，然后挪开了。明天早自习，你们可以装作什么都没发生——除了那份没写完的作业。'
+    : '宿管推开门的时候，你们正围着一团空气手忙脚乱。明天早自习，221 的名字会出现在公告栏上，连宿舍号都写得很大。';
+
+  $('#factLight').textContent = lightName;
+  const t = taskInfo();
+  $('#factTask').textContent = t.label;
+  const players = [
+    {name:'你', role:S.roleDef.name, pct:taskPct(), you:true},
+    ...S.mates.map(m=>({name:m.name, role:ROLES[m.role].name, pct:Math.round(m.progress)}))
+  ].sort((a,b)=> b.pct - a.pct);
+
+  const top = players[0].pct;
+  const mvpNames = players.filter(p=>p.pct===top).map(p=>p.name);
+  const mvpIsYou = mvpNames.includes('你');
+  $('#factMvp').textContent = mvpIsYou ? '你' : mvpNames.join(' / ');
+
+  $('#rankList').innerHTML = players.map((p,i)=>{
+    const isMvp = p.pct === top;
+    return `<li class="rank ${p.you?'you':''} ${isMvp?'mvp':''}">
+      <span class="ri">${String(i+1).padStart(2,'0')}</span>
+      <span class="rn">${p.name}<em>${p.role}</em></span>
+      <div class="rb"><i style="width:${p.pct}%"></i></div>
+      <span class="rp">${p.pct}</span>
+    </li>`;
+  }).join('');
+
+  const plural = mvpNames.length > 1;
+  $('#endNote').innerHTML = mvpIsYou
+    ? `你完成了自己的秘密任务，而且是今晚最彻底的一个人。${plural?'（并列）':''} 至于灯——${survive?'它在你指的位置。':'它在别的地方。'}`
+    : `${mvpNames.join('、')}的秘密任务完成度最高。你的任务停在「${taskInfo().label}」——下次记得，指认也是一种信息交换。`;
+}
+
+/* ---------------- modal ---------------- */
+let modalClosedHandler = null;
+function openModal({kicker, title, sub, body, closable=true, onClose}){
+  const panel = $('#modalPanel');
+  panel.innerHTML = `
+    ${closable?'<button class="modal-x" id="modalX" aria-label="关闭">✕</button>':''}
+    <div class="kicker">${kicker||''}</div>
+    <h3>${title||''}</h3>
+    <p class="msub">${sub||''}</p>
+    ${body||''}`;
+  $('#modal').classList.add('on');
+  modalClosedHandler = onClose || null;
+  if(closable){
+    $('#modalX').addEventListener('click', closeModal);
+  }
+}
+function closeModal(){
+  $('#modal').classList.remove('on');
+  if(modalClosedHandler){ const h = modalClosedHandler; modalClosedHandler = null; h(); }
+}
+
+/* ---------------- rules ---------------- */
+function openRules(){
+  const wasBusy = busy;
+  busy = true;
+  openModal({
+    kicker:'规则', title:'怎么玩', closable:true,
+    body:`<div class="rules">
+      <h4>单设备版 · 一局 8 分钟</h4>
+      <ol>
+        <li>选一个身份，其余 5 人由室友代替。每人都有一个秘密任务。</li>
+        <li>每轮有 <b>180 秒</b>行动预算（相当于现实里那 3 分钟）。搜查、搭话、秘密动作、观察，每样都要花时间。</li>
+        <li>点击平面图搜查一处：翻到空的地方会得到一条线索；翻对了，全宿舍直接存活。</li>
+        <li>每轮结束指认一个最可疑的人：他会公开一条线索，但这一轮别想再推进任务。</li>
+        <li>3 轮内没找到，就要在最后指一个位置。指对了算活着，指错了——社死。</li>
+        <li>每人还有一次<b>公开技能</b>：喊口令、划掉位置、换提示、问外卖远近——喊完看谁接，接了才算数。</li>
+        <li>秘密任务完成度最高的人是 MVP。灯可以靠运气，MVP 不行。</li>
+      </ol>
+      <h4>线索与地图</h4>
+      <p>线索只有三种：<b>高度</b>（高／低）、<b>方位</b>（靠窗／靠门）、<b>材质</b>（软／硬）。三条凑齐，位置唯一。指认室友能问出高度和方位；<b>材质只有亲手翻找才知道</b>。所以想稳赢，既要问人，也得动手。</p>
+      <h4>真人版 · 宿舍里直接开玩</h4>
+      <ol>
+        <li>六个人各抽一张身份牌，只看自己的任务。</li>
+        <li>手机计时，每轮 3 分钟。每人每轮只能做一个小动作或说一句话，不能离开宿舍区域。</li>
+        <li>每轮结束投票指认「谁最可疑」，被指认者公开一个小线索（由主持人准备）。</li>
+        <li>3 轮后判定：找到小夜灯＝全员存活；秘密任务完成最多者＝MVP。</li>
+      </ol>
+      <p class="tag">建议：关灯玩。手机倒扣在桌上，只留一个计时的人。</p>
+    </div>`,
+    onClose:()=>{ busy = wasBusy; }
+  });
+}
+
+/* ---------------- wire up ---------------- */
+$('#btnStart').addEventListener('click', ()=> setScreen('#scSelect'));
+$('#btnRulesCover').addEventListener('click', openRules);
+$('#btnRulesGame').addEventListener('click', openRules);
+$('#btnRulesEnd').addEventListener('click', openRules);
+
+$('#btnGo').addEventListener('click', ()=>{
+  if(!pendingRole) return;
+  if(gameMode === 'code'){ startCode(pendingRole); return; }
+  newGame(pendingRole);
+});
+
+$$('#plan .spot').forEach(g=>{
+  g.addEventListener('click', ()=> handleSearch(g.dataset.id));
+  g.addEventListener('keydown', e=>{
+    if(e.key==='Enter' || e.key===' '){ e.preventDefault(); handleSearch(g.dataset.id); }
+  });
+});
+
+$('#btnAct').addEventListener('click', actMain);
+$('#btnTalk').addEventListener('click', openTalk);
+$('#btnObserve').addEventListener('click', doObserve);
+$('#btnSkill').addEventListener('click', doSkill);
+$('#btnEnd').addEventListener('click', openVote);
+
+$('#btnAgain').addEventListener('click', ()=>{
+  if(S && S.role) newGame(S.role); else setScreen('#scSelect');
+});
+$('#btnOther').addEventListener('click', ()=>{
+  pendingRole = null;
+  $('#btnGo').disabled = true;
+  $$('#roleList .role-row').forEach(r=>r.classList.remove('on'));
+  setScreen('#scSelect');
+});
+
+$('#modal').addEventListener('click', e=>{ if(e.target.id === 'modal'){ /* 强制选择的弹窗不允许点背景关闭 */ } });
+
+/* ══════════════ 单机 · 暗号版（查寝塔防） ══════════════ */
+
+const KWAVES = [
+  { g:'夜巡宿管',   c:'查寝夜巡', frag:'你的碎片：前两个字是「查」「寝」。',      t:1 },
+  { g:'断电黑影',   c:'断电查鬼', frag:'你的碎片：后两个字是「查」「鬼」。',      t:2 },
+  { g:'偷外卖的手', c:'外卖被偷', frag:'你的碎片：第三个字是「被」。',            t:2 },
+  { g:'熬夜巡查员', c:'熬夜被抓', frag:'你的碎片：后两个字是「被」「抓」。',      t:3 },
+  { g:'宿管上楼',   c:'宿管来了', frag:'你的碎片：后两个字是「来」「了」。',      t:3 }
+];
+const KCHARS = ['查','寝','夜','巡','断','电','鬼','外','卖','被','偷','熬','抓','宿','管','来','了'];
+const KTHREAT = ['无','小','中','大'];
+const KDOOR = ['倒塌','破损','受损','完好'];
+const KSKILL = {
+  pink:  { dmg:1, kind:'exclude', n:3, desc:'闪光灯照下去：划掉 3 个不可能的字' },
+  nerd:  { dmg:1, kind:'pos', p:2, desc:'在纸上划重点：第二位直接确定' },
+  dragon:{ dmg:2, kind:'npc', boost:.16, desc:'龙王降雨：这一波室友更专心（减伤 2 档）' },
+  flo:   { dmg:1, kind:'exclude', n:4, desc:'悄悄话结界：划掉 4 个不可能的字' },
+  gz:    { dmg:1, kind:'pos', p:4, desc:'方言加密：第四位直接确定' },
+  pig:   { dmg:1, kind:'exclude', n:2, desc:'吃货嗅觉：划掉 2 个不可能的字' }
+};
+const KACH = {
+  chaosWon:  '错乱里的清醒：在一波「错乱」里把暗号答对',
+  streak2:   '连中两元：连续两波答对',
+  soloRight: '一个人也算数：某一波只有你答对',
+  noSkill:   '省着用：五波全对，而且一次技能都没用',
+  threeBreak:'暗号三重奏：破解成功三波',
+  firstSkill:'开一次闸：第一次使用公开技能'
+};
+
+let K = null;
+
+function kNow(){ return Date.now(); }
+
+function startCode(roleId){
+  K = {
+    role: roleId,
+    wave: 0,
+    threat: 1,
+    door: 3,
+    skillLeft: true,
+    cells: ['','','',''],
+    fixed: [false,false,false,false],
+    useSkill: false,
+    guess: '',
+    submitted: false,
+    reveal: null,
+    deadline: 0,
+    achieved: new Set(),
+    breaks: 0,
+    lastRight: false,
+    streak: 0,
+    history: [],
+    npcs: []
+  };
+  const others = Object.keys(ROLES).filter(r => r !== roleId);
+  K.npcs = others.map((r,i) => ({ role:r, name:ROLES[r].who, acc:0.34 + i*0.06 + Math.random()*0.10, correct:0 }));
+  setScreen('#scCode');
+  kBeginWave(1);
+}
+
+function kBeginWave(n){
+  const w = KWAVES[n-1];
+  K.wave = n;
+  K.cells = ['','','',''];
+  K.fixed = [false,false,false,false];
+  K.excluded = new Set();
+  K.useSkill = false;
+  K.skillArmed = false;
+  K.guess = '';
+  K.submitted = false;
+  K.reveal = null;
+  K.npcBoost = 0;
+  K.deadline = kNow() + 45000;
+  $('#kFrag').textContent = w.frag;
+  $('#kNotes').innerHTML = '';
+  kRenderAll();
+  kStartTimer();
+}
+
+function kStartTimer(){
+  if (kTimer) clearInterval(kTimer);
+  kTimer = setInterval(() => {
+    if (!K || K.submitted) return;
+    const left = Math.max(0, Math.round((K.deadline - kNow())/1000));
+    $('#kTimer').textContent = '0:' + String(left).padStart(2,'0');
+    $('#kTimer').style.color = left <= 10 ? '#e2492f' : '';
+    if (left <= 0) kSubmit(true);
+  }, 250);
+}
+
+function kRenderAll(){
+  const w = KWAVES[K.wave-1];
+  $('#kWave').textContent = '第 ' + K.wave + ' / 5 波';
+  $('#kThreat').textContent = KTHREAT[K.threat];
+  $('#kDoor').textContent = KDOOR[K.door];
+  $('#kTitle').textContent = '第 ' + K.wave + ' 波 · 鬼叫「' + w.g + '」';
+  $('#kSub').textContent = '鬼的名字里藏着暗号的一半';
+
+  // 四个字位
+  $('#kSlots').innerHTML = K.cells.map((ch,i) =>
+    '<div class="kslot' + (ch ? '' : ' empty') + (K.fixed[i] ? ' fixed' : '') + (kCurSlot() === i && !K.submitted ? ' cur' : '') + '">' +
+    (ch || '·') + '</div>').join('');
+
+  // 键盘
+  const used = new Set(K.cells.filter(Boolean).map((c,i) => K.fixed[i] ? c : null).filter(Boolean));
+  $('#kPad').innerHTML = KCHARS.map(c => {
+    const off = K.excluded.has(c) || used.has(c);
+    return '<button data-k="' + c + '"' + (off ? ' disabled' : '') + '>' + c + '</button>';
+  }).join('') + '<button class="wide" data-k="__back">退格</button><button class="wide" data-k="__clear">清空</button>';
+
+  // 按钮
+  const sk = KSKILL[K.role];
+  $('#kSkill').innerHTML = (K.useSkill ? '已用技能' : '用技能') +
+    '<small>' + (K.skillLeft ? sk.desc : '这一局的技能已经用掉了') + '</small>';
+  $('#kSkill').disabled = !K.skillLeft || K.submitted;
+  $('#kSkill').classList.toggle('on', K.useSkill);
+  $('#kKeep').classList.toggle('on', !K.useSkill);
+  $('#kSubmit').disabled = K.submitted || K.cells.some(c => !c);
+
+  // 交完就收起输入区
+  const play = $('#kPlay');
+  if (play) play.style.display = K.submitted ? 'none' : '';
+
+  // 状态行
+  $('#kState').textContent = K.submitted
+    ? '这一波交完了，下面是结果'
+    : (K.cells.every(Boolean) ? '四字齐了，可以交' : '还差 ' + K.cells.filter(c => !c).length + ' 个字');
+
+  kRenderSide();
+}
+
+function kCurSlot(){
+  for (let i=0;i<4;i++) if (!K.cells[i] && !K.fixed[i]) return i;
+  return -1;
+}
+
+function kRenderSide(){
+  $('#kProg').innerHTML = KWAVES.map((w,i) => {
+    const n = i+1;
+    const h = K.history.find(x => x.wave === n);
+    const cls = h ? (h.ok ? 'ok' : '') : (n === K.wave ? 'now' : '');
+    const mark = h ? (h.ok ? '对' : '错') : (n === K.wave ? '进行中' : '—');
+    return '<li class="' + cls + '"><span>第 ' + n + ' 波</span><b>' + mark + '</b></li>';
+  }).join('');
+  $('#kAch').innerHTML = Object.keys(KACH).map(id =>
+    '<li class="' + (K.achieved.has(id) ? 'got' : '') + '">' + (K.achieved.has(id) ? '✓ ' : '· ') + KACH[id] + '</li>').join('');
+}
+
+function kPick(ch){
+  if (!K || K.submitted) return;
+  if (ch === '__back'){ for (let i=3;i>=0;i--){ if (K.cells[i] && !K.fixed[i]){ K.cells[i] = ''; break; } } kRenderAll(); return; }
+  if (ch === '__clear'){ K.cells = K.cells.map((c,i) => K.fixed[i] ? c : ''); kRenderAll(); return; }
+  const i = kCurSlot();
+  if (i < 0) return;
+  K.cells[i] = ch;
+  kRenderAll();
+}
+
+function kSetSkill(on){
+  if (!K || K.submitted) return;
+  if (on && !K.skillLeft) return;
+  K.useSkill = on;
+  kRenderAll();
+}
+
+function kUseSkill(){
+  if (!K || K.submitted || !K.skillLeft) return;
+  const sk = KSKILL[K.role];
+  K.useSkill = true;
+  K.skillLeft = false;
+  K.skillArmed = true;
+  const code = KWAVES[K.wave-1].c;
+  const notes = $('#kNotes');
+  const line = document.createElement('div');
+
+  if (sk.kind === 'pos'){
+    const p = sk.p - 1;
+    if (!K.fixed[p]){
+      K.cells[p] = code[p];
+      K.fixed[p] = true;
+      // 把前面的空位挤到后面去
+      const rest = K.cells.filter((c,i) => !K.fixed[i]);
+      line.textContent = '技能【' + ROLES[K.role].skill + '】：' + sk.desc + '——第 ' + sk.p + ' 位是「' + code[p] + '」。';
+    } else {
+      line.textContent = '技能【' + ROLES[K.role].skill + '】：第 ' + sk.p + ' 位你本来就知道。';
+    }
+  } else if (sk.kind === 'exclude'){
+    const pool = KCHARS.filter(c => !code.includes(c));
+    let n = 0;
+    while (n < sk.n && pool.length){
+      const idx = Math.floor(Math.random()*pool.length);
+      K.excluded.add(pool.splice(idx,1)[0]);
+      n++;
+    }
+    line.textContent = '技能【' + ROLES[K.role].skill + '】：' + sk.desc + '——键盘上灰掉的那些就是不可能的。';
+  } else {
+    K.npcBoost = sk.boost;
+    line.textContent = '技能【' + ROLES[K.role].skill + '】：' + sk.desc + '，这一波室友答对的概率提高。';
+  }
+  notes.appendChild(line);
+  if (!K.achieved.has('firstSkill')){ K.achieved.add('firstSkill'); }
+  kRenderAll();
+}
+
+function kSubmit(auto){
+  if (!K || K.submitted) return;
+  const w = KWAVES[K.wave-1];
+  const code = w.c;
+  const mine = K.cells.join('');
+  const okMine = mine === code;
+  const sk = K.useSkill || K.skillArmed ? KSKILL[K.role] : null;
+  const dmg = sk ? sk.dmg : 0;
+
+  // 室友作答
+  const rows = K.npcs.map(n => {
+    const acc = Math.min(0.86, n.acc + K.npcBoost);
+    const hit = Math.random() < acc;
+    return { id:n.role, name:n.name, role:n.role, roleName:ROLES[n.role].name, skill:false, correct:hit };
+  });
+  rows.push({ id:K.role+'me', name:'你', role:K.role, roleName:ROLES[K.role].name, skill:!!sk, correct:okMine, me:true });
+
+  const correctCount = rows.filter(r => r.correct).length;
+  const kind = correctCount >= 4 ? 'break' : correctCount === 3 ? 'none' : 'chaos';
+
+  // 威胁 / 门
+  K.threat = w.t;
+  if (kind === 'break') K.threat -= 1;
+  if (kind === 'chaos') K.threat += 1;
+  let overflow = 0;
+  if (dmg){
+    const before = K.threat;
+    K.threat -= dmg;
+    if (K.threat < 0){ overflow = -K.threat; K.threat = 0; }
+    if (before < 0) overflow = 0;
+  }
+  K.threat = Math.max(0, Math.min(3, K.threat));
+  if (kind === 'break') K.door = Math.min(3, K.door + 1);
+  if (kind === 'chaos') K.door = Math.max(0, K.door - 1);
+  if (overflow) K.door = Math.min(3, K.door + overflow);
+
+  // 成就
+  if (okMine && kind === 'chaos') K.achieved.add('chaosWon');
+  if (okMine){ K.streak += 1; if (K.streak >= 2) K.achieved.add('streak2'); } else K.streak = 0;
+  if (okMine && rows.filter(r => r.correct).length === 1) K.achieved.add('soloRight');
+  if (kind === 'break') K.breaks += 1;
+  if (K.breaks >= 3) K.achieved.add('threeBreak');
+  if (K.wave === 5 && K.history.every(h => h.ok) && okMine && !K.skillArmed && K.skillLeft) K.achieved.add('noSkill');
+
+  K.history.push({ wave:K.wave, ok:okMine, kind, count:correctCount });
+  K.submitted = true;
+  K.reveal = { rows, kind, correctCount, code, dmg, overflow, mine };
+
+  const killed = K.door <= 0;
+  kRenderAll();
+  kRenderReveal(killed);
+  if (kTimer) clearInterval(kTimer);
+}
+
+function kRenderReveal(killed){
+  const r = K.reveal;
+  const v = {
+    break: '暗号破解成功（' + r.correctCount + ' / 6 对）。威胁降一档，门回一档。',
+    none:  '暗号对上了但不够数（' + r.correctCount + ' / 6 对）。这一波照常算。',
+    chaos: '暗号错乱（只有 ' + r.correctCount + ' / 6 对）。威胁升一档，门被撞了一下。'
+  }[r.kind];
+  const skNote = r.dmg
+    ? ' 你用技能抵掉了 ' + r.dmg + ' 档' + (r.overflow ? '（多出来的 ' + r.overflow + ' 档转成门回复）' : '') + '。'
+    : ' 这一波你没用技能。';
+
+  const rowsHtml = r.rows.map(x =>
+    '<div class="krv"><div class="rn2"><b>' + x.name + '</b><em>' + x.roleName + (x.id.indexOf('me') >= 0 ? ' · 你' : '') + '</em></div>' +
+    '<div class="sk' + (x.skill ? ' used' : '') + '">' + (x.skill ? '用技能' : '保留') + '</div>' +
+    '<div class="mark ' + (x.correct ? 'ok' : 'no') + '">' + (x.correct ? '✓ 对' : '✗ 错') + '</div></div>').join('');
+
+  const last = K.wave >= 5 || killed;
+  $('#kReveal').innerHTML =
+    '<div class="sect" style="margin-top:26px">本波亮牌 <em>这一波暗号：' + r.code + '</em></div>' +
+    '<div class="krvhead"><span>六个人的选择</span><span>' + r.correctCount + ' / 6 对</span></div>' +
+    rowsHtml +
+    '<div class="kverdict ' + r.kind + '">' + v + skNote +
+    '<div style="margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--dim-2)">威胁 ' + KTHREAT[K.threat] + ' · 门 ' + KDOOR[K.door] + '</div></div>' +
+    (killed ? '<div class="kverdict chaos" style="margin-top:12px">门被撞塌了。这一夜到此为止。</div>' : '') +
+    '<div class="krow"><button class="btn btn-primary" id="kNext">' + (last ? '看结局' : '下一波') + ' →</button></div>';
+
+  $('#kNext').addEventListener('click', () => {
+    if (K.door <= 0 || K.wave >= 5) kFinish();
+    else kBeginWave(K.wave + 1);
+  });
+}
+
+function kFinish(){
+  if (kTimer) clearInterval(kTimer);
+  const win = K.door > 0;
+  const waves = K.history.length;
+  const correctMine = K.history.filter(h => h.ok).length;
+  const board = K.npcs.map(n => ({ name:n.name, role:n.roleName, count:K.history.filter((h,i) => h.ok && false).length }));
+
+  // 按历史重算每个人的答对数
+  const tally = new Map();
+  tally.set('你', correctMine);
+  K.npcs.forEach(n => tally.set(n.name, 0));
+  K.revealHistory = null;
+
+  $('#keTitle').textContent = win ? '天亮了。' : '门倒了。';
+  $('#keLead').textContent = win
+    ? '五波查寝全挡下来了。宿管在门口站了很久，最后骂了一句「明天再说」就上楼了。'
+    : '最后一波没挡住。明早的通报栏上，221 排在第一个。';
+  $('#keWaves').textContent = waves + ' / 5 波';
+  $('#keDoor').textContent = KDOOR[K.door];
+  $('#keMvp').textContent = correctMine >= 3 ? '你' : '室友';
+  $('#keNote').textContent = '这一局你答对 ' + correctMine + ' 波，破解成功 ' + K.breaks + ' 波。暗号版没有聊天框——碎片只发给你一个人。';
+  $('#keAch').innerHTML = Object.keys(KACH).map(id =>
+    '<div class="' + (K.achieved.has(id) ? 'got' : '') + '">' + (K.achieved.has(id) ? '✓ ' : '· ') + KACH[id] + '</div>').join('');
+  $('#keRank').innerHTML = KWAVES.map((w,i) => {
+    const h = K.history[i];
+    const pct = h ? (h.count/6*100) : 0;
+    return '<li class="rank"><div class="ri">0' + (i+1) + '</div>' +
+      '<div class="rn">第 ' + (i+1) + ' 波<em>' + w.c + '</em></div>' +
+      '<div class="rb"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="rp">' + (h ? h.count + '/6' : '—') + '</div></li>';
+  }).join('');
+  setScreen('#scKEnd');
+}
+
+$('#kPad').addEventListener('click', e => {
+  const b = e.target.closest('button[data-k]');
+  if (b) kPick(b.dataset.k);
+});
+$('#kSkill').addEventListener('click', kUseSkill);
+$('#kKeep').addEventListener('click', () => kSetSkill(false));
+$('#kSubmit').addEventListener('click', () => kSubmit(false));
+$('#kQuit').addEventListener('click', () => { if (kTimer) clearInterval(kTimer); setScreen('#scSelect'); });
+$('#keAgain').addEventListener('click', () => startCode(K.role));
+$('#keOther').addEventListener('click', () => { setScreen('#scSelect'); });
+
+document.querySelectorAll('#modeTabs .mode').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#modeTabs .mode').forEach(x => x.classList.toggle('on', x === b));
+    gameMode = b.dataset.m;
+    $('#hintSearch').hidden = gameMode !== 'search';
+    $('#hintCode').hidden = gameMode !== 'code';
+    $('#btnGo').innerHTML = gameMode === 'code' ? '开始查寝 <span>→</span>' : '开始这一夜 <span>→</span>';
+    renderRoleList();
+  });
+});
+
+renderRoleList();
+})();
+</script>
+<!-- crt-layer -->
+<div class="crt" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<script>
+/* 只有通过 https / localhost 打开时才注册 Service Worker（file:// 打开会静默跳过） */
+(function(){
+  var local = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  if (!local || !('serviceWorker' in navigator)) return;
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('/sw.js').then(function(reg){ reg.update(); }).catch(function(){});
+  });
+})();
+</script>
+</body>
+</html>
